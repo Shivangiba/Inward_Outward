@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --font-sans: "Outfit", "Inter", var(--font-geist-sans);
+}
+
+:root {
+  /* SINGLE PASTEL LAVENDER THEME */
+  --primary: #ede9fe;               /* Soft Lavender */
+  --primary-foreground: #4c1d95;    /* Deep Purple Text */
+  --secondary: #f5f3ff;             /* Very Light Lavender */
+  --muted: #f3e8ff;
+  --accent: #ddd6fe;                /* Accent Lavender */
+  --border: #e9d5ff;
+  --input: #ffffff;
+  --ring: #c4b5fd;
+
+  --background: #ffffff;
+  --foreground: #2e1065;
+
+  --radius: 0.75rem;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .pastel-card {
+    @apply bg-[var(--secondary)] border border-[var(--border)] rounded-[var(--radius)] p-6 shadow-sm hover:shadow-md transition-all duration-300;
+  }
+
+  .pastel-input {
+    @apply w-full bg-[var(--input)] border border-[var(--border)] rounded-lg px-4 py-2 focus:ring-2 focus:ring-[var(--ring)] focus:border-transparent outline-none transition-all;
+  }
+
+  .pastel-button {
+    @apply bg-[var(--primary)] text-[var(--primary-foreground)] font-semibold px-6 py-2 rounded-lg hover:opacity-90 active:scale-95 transition-all;
+  }
+
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-3 rounded-xl text-slate-600 hover:bg-[var(--primary)] hover:text-[var(--primary-foreground)] transition-all duration-200;
+  }
+
+  .sidebar-link.active {
+    @apply bg-[var(--primary)] text-[var(--primary-foreground)] font-medium;
+  }
+}

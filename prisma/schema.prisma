@@ -1,0 +1,260 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Role {
+  RoleID   Int    @id @default(autoincrement())
+  RoleName String @unique @db.VarChar(50)
+  users    User[]
+}
+
+model Team {
+  TeamID               Int                   @id @default(autoincrement())
+  TeamName             String                @unique @db.VarChar(100)
+  ManagerUserID        Int?
+  IsActive             Boolean               @default(true)
+  Created              DateTime              @default(now())
+  Modified             DateTime?             @updatedAt
+  users                User[]
+  inwardOutwardOffices InwardOutwardOffice[]
+  inOutwardFromTos     InOutwardFromTo[]
+  inOutwardModes       InOutwardMode[]
+  courierCompanies     CourierCompany[]
+  inwards              Inward[]
+  outwards             Outward[]
+  auditLogs            AuditLog[]
+}
+
+model User {
+  UserID      Int                   @id @default(autoincrement())
+  Email       String                @unique @db.VarChar(50)
+  Password    String                @db.VarChar(500)
+  RoleID      Int
+  TeamID      Int?
+  IsActive    Boolean               @default(true)
+  Created     DateTime              @default(now())
+  Modified    DateTime?             @updatedAt
+  Name        String?               @db.VarChar(100)
+  ProfilePath String?
+  JoinedAt    DateTime?             @default(now())
+  role        Role                  @relation(fields: [RoleID], references: [RoleID])
+  team        Team?                 @relation(fields: [TeamID], references: [TeamID])
+  inwards     Inward[]
+  outwards    Outward[]
+  offices     InwardOutwardOffice[]
+  contacts    InOutwardFromTo[]
+  modes       InOutwardMode[]
+  couriers    CourierCompany[]
+  auditLogs   AuditLog[]
+}
+
+model InwardOutwardOffice {
+  InwardOutwardOfficeID Int      @id @default(autoincrement()) @map("id")
+  OfficeName            String   @map("officeName") @db.VarChar(250)
+  TeamID                Int?     @map("teamId")
+  InstituteID           Int      @map("instituteId")
+  DepartmentID          Int?     @map("departmentId")
+  OpeningDate           DateTime @map("openingDate")
+  OpeningInwardNo       Int      @map("openingInwardNo")
+  OpeningOutwardNo      Int      @map("openingOutwardNo")
+  Remarks               String?  @map("remarks") @db.VarChar(500)
+  UserID                Int      @map("userId")
+  user                  User     @relation(fields: [UserID], references: [UserID])
+  team                  Team?    @relation(fields: [TeamID], references: [TeamID])
+  Created               DateTime @default(now()) @map("created")
+  Modified              DateTime @updatedAt @map("modified")
+
+  @@map("InwardOutwardOffice")
+}
+
+model InOutwardFromTo {
+  InOutwardFromToID   Int       @id @default(autoincrement()) @map("id")
+  InOutwardFromToName String?   @map("name") @db.VarChar(100)
+  IsActive            Boolean   @default(true) @map("isActive")
+  Sequence            Decimal?  @map("sequence")
+  Remarks             String?   @map("remarks") @db.VarChar(500)
+  UserID              Int       @map("userId")
+  user                User      @relation(fields: [UserID], references: [UserID])
+  TeamID              Int?      @map("teamId")
+  team                Team?     @relation(fields: [TeamID], references: [TeamID])
+  Created             DateTime  @default(now()) @map("created")
+  Modified            DateTime  @updatedAt @map("modified")
+  PersonName          String?   @map("personName") @db.VarChar(100)
+  Address             String?   @map("address") @db.VarChar(250)
+  Place               String?   @map("place") @db.VarChar(100)
+  inwards             Inward[]
+  outwards            Outward[]
+
+  @@map("InOutwardFromTo")
+}
+
+model InOutwardMode {
+  InOutwardModeID   Int       @id @default(autoincrement()) @map("id")
+  InOutwardModeName String    @map("name") @db.VarChar(100)
+  IsActive          Boolean   @default(true) @map("isActive")
+  Sequence          Decimal?  @map("sequence")
+  Remarks           String?   @map("remarks") @db.VarChar(500)
+  UserID            Int       @map("userId")
+  user              User      @relation(fields: [UserID], references: [UserID])
+  TeamID            Int?      @map("teamId")
+  team              Team?     @relation(fields: [TeamID], references: [TeamID])
+  Created           DateTime  @default(now()) @map("created")
+  Modified          DateTime  @updatedAt @map("modified")
+  inwards           Inward[]
+  outwards          Outward[]
+
+  @@map("InOutwardMode")
+}
+
+model CourierCompany {
+  CourierCompanyID   Int       @id @default(autoincrement()) @map("id")
+  CourierCompanyName String    @map("name") @db.VarChar(100)
+  ContactPersonName  String?   @map("contactPersonName") @db.VarChar(100)
+  DefaultRate        Decimal?  @map("defaultRate")
+  Remarks            String?   @map("remarks") @db.VarChar(500)
+  UserID             Int       @map("userId")
+  user               User      @relation(fields: [UserID], references: [UserID])
+  TeamID             Int?      @map("teamId")
+  team               Team?     @relation(fields: [TeamID], references: [TeamID])
+  Created            DateTime  @default(now()) @map("created")
+  Modified           DateTime  @updatedAt @map("modified")
+  PhoneNo            String?   @map("phoneNo") @db.VarChar(50)
+  Email              String?   @map("email") @db.VarChar(50)
+  Website            String?   @map("website") @db.VarChar(50)
+  Address            String?   @map("address") @db.VarChar(500)
+  outwards           Outward[]
+
+  @@map("CourierCompany")
+}
+
+model Inward {
+  InwardID                  Int              @id @default(autoincrement()) @map("id")
+  InwardNo                  String           @map("inwardNo") @db.VarChar(50)
+  InwardDate                DateTime         @map("inwardDate")
+  ReceivedDate              DateTime?        @map("receivedDate")
+  OutwardID                 Int?             @map("outwardId")
+  InOutwardModeID           Int?             @map("inOutwardModeId")
+  ReceiptNo                 String?          @map("receiptNo") @db.VarChar(100)
+  ReceiptDate               DateTime?        @map("receiptDate")
+  InwardLetterNo            String?          @map("inwardLetterNo") @db.VarChar(100)
+  InwardLetterDate          DateTime?        @map("inwardLetterDate")
+  Subject                   String?          @map("subject")
+  Description               String?          @map("description") @db.VarChar(500)
+  InOutwardFromToID         Int?             @map("inOutwardFromToId")
+  LetterFromName            String?          @map("letterFromName") @db.VarChar(100)
+  LetterFromAddress         String?          @map("letterFromAddress") @db.VarChar(500)
+  InstituteID               Int?             @map("instituteId")
+  DepartmentID              Int?             @map("departmentId")
+  ToPersonName              String?          @map("toPersonName") @db.VarChar(100)
+  InwardDocumentPath        String?          @map("inwardDocumentPath") @db.VarChar(250)
+  Remarks                   String?          @map("remarks") @db.VarChar(500)
+  UserID                    Int              @map("userId")
+  user                      User             @relation(fields: [UserID], references: [UserID])
+  TeamID                    Int?             @map("teamId")
+  team                      Team?            @relation(fields: [TeamID], references: [TeamID])
+  Created                   DateTime         @default(now()) @map("created")
+  Modified                  DateTime         @updatedAt @map("modified")
+  CourierCompanyName        String?          @map("courierCompanyName") @db.VarChar(100)
+  NoOfCompilation           String?          @map("noOfCompilation") @db.VarChar(250)
+  CopyTo                    String?          @map("copyTo") @db.VarChar(250)
+  FromContactDetails        String?          @map("fromContactDetails") @db.VarChar(250)
+  FromInwardOutwardOfficeID Int?             @map("fromInwardOutwardOfficeId")
+  ToInwardOutwardOfficeID   Int              @map("toInwardOutwardOfficeId")
+  InternalOutwardID         Int?             @map("internalOutwardId")
+  FinYearID                 Int              @map("finYearId")
+  SubjectShort              String?          @map("subjectShort") @db.VarChar(100)
+  OtherInstitute            String?          @map("otherInstitute") @db.VarChar(150)
+  inOutwardFromTo           InOutwardFromTo? @relation(fields: [InOutwardFromToID], references: [InOutwardFromToID])
+  inOutwardMode             InOutwardMode?   @relation(fields: [InOutwardModeID], references: [InOutwardModeID])
+
+  @@index([TeamID, Created])
+  @@index([TeamID, UserID])
+  @@map("Inward")
+}
+
+model Outward {
+  OutwardID                 Int              @id @default(autoincrement()) @map("id")
+  OutwardNo                 String           @map("outwardNo") @db.VarChar(50)
+  OutwardDate               DateTime         @map("outwardDate")
+  InwardID                  Int?             @map("inwardId")
+  InstituteID               Int?             @map("instituteId")
+  DepartmentID              Int?             @map("departmentId")
+  OutwardByPerson           String?          @map("outwardByPerson") @db.VarChar(100)
+  InOutwardFromToID         Int?             @map("inOutwardFromToId")
+  LetterForwardedToName     String?          @map("letterForwardedToName") @db.VarChar(500)
+  LetterForwardedToAddress  String?          @map("letterForwardedToAddress") @db.VarChar(250)
+  LetterForwardedToPlace    String?          @map("letterForwardedToPlace") @db.VarChar(100)
+  InOutwardModeID           Int?             @map("inOutwardModeId")
+  LetterNo                  String?          @map("letterNo") @db.VarChar(100)
+  LetterDate                DateTime?        @map("letterDate")
+  Subject                   String?          @map("subject") @db.VarChar(250)
+  CourierReceiptNo          String?          @map("courierReceiptNo") @db.VarChar(100)
+  CourierReceiptDate        DateTime?        @map("courierReceiptDate")
+  Amount                    Decimal?         @map("amount")
+  AmountPaidType            String?          @map("amountPaidType") @db.VarChar(10)
+  CourierReceiptPath        String?          @map("courierReceiptPath") @db.VarChar(250)
+  CourierAcknowledgePath    String?          @map("courierAcknowledgePath") @db.VarChar(250)
+  OutwardDocumentPath       String?          @map("outwardDocumentPath") @db.VarChar(250)
+  Remarks                   String?          @map("remarks") @db.VarChar(500)
+  UserID                    Int              @map("userId")
+  user                      User             @relation(fields: [UserID], references: [UserID])
+  Created                   DateTime         @default(now()) @map("created")
+  Modified                  DateTime         @updatedAt @map("modified")
+  IsReturned                Boolean          @default(false) @map("isReturned")
+  ReturnReason              String?          @map("returnReason") @db.VarChar(500)
+  ReturnAction              String?          @map("returnAction") @db.VarChar(500)
+  NoOfCompilation           String?          @map("noOfCompilation") @db.VarChar(250)
+  CourierCompanyID          Int?             @map("courierCompanyId")
+  CopyTo                    String?          @map("copyTo") @db.VarChar(250)
+  ToContactDetails          String?          @map("toContactDetails") @db.VarChar(250)
+  ReturnDate                DateTime?        @map("returnDate")
+  FromInwardOutwardOfficeID Int              @map("fromInwardOutwardOfficeId")
+  ToInwardOutwardOfficeID   Int?             @map("toInwardOutwardOfficeId")
+  FinYearID                 Int              @map("finYearId")
+  TeamID                    Int?             @map("teamId")
+  team                      Team?            @relation(fields: [TeamID], references: [TeamID])
+  FileNo                    String?          @map("fileNo") @db.VarChar(50)
+  SMSToCSV                  String?          @map("smsToCsv") @db.VarChar(250)
+  EmailToCSV                String?          @map("emailToCsv") @db.VarChar(250)
+  SubjectShort              String?          @map("subjectShort") @db.VarChar(100)
+  OtherInstitute            String?          @map("otherInstitute") @db.VarChar(150)
+  Charges                   Decimal?         @map("charges")
+  TrackingID                String?          @map("trackingId") @db.VarChar(50)
+  DeliveryStatus            String?          @map("deliveryStatus") @db.VarChar(50)
+  courierCompany            CourierCompany?  @relation(fields: [CourierCompanyID], references: [CourierCompanyID])
+  inOutwardFromTo           InOutwardFromTo? @relation(fields: [InOutwardFromToID], references: [InOutwardFromToID])
+  inOutwardMode             InOutwardMode?   @relation(fields: [InOutwardModeID], references: [InOutwardModeID])
+
+  @@index([TeamID, Created])
+  @@index([TeamID, UserID])
+  @@map("Outward")
+}
+
+model AuditLog {
+  AuditLogID Int      @id @default(autoincrement()) @map("id")
+  TableName  String   @map("tableName") @db.VarChar(100)
+  RecordID   String?  @map("recordId") @db.VarChar(100)
+  Action     String   @map("action") @db.VarChar(50) // CREATE, UPDATE, DELETE, LOGIN, CRASH
+  OldData    Json?    @map("oldData")
+  NewData    Json?    @map("newData")
+  UserID     Int?     @map("userId")
+  TeamID     Int?     @map("teamId")
+  IPAddress  String?  @map("ipAddress") @db.VarChar(50)
+  UserAgent  String?  @map("userAgent") @db.VarChar(250)
+  Details    String?  @map("details") @db.VarChar(1000)
+  Created    DateTime @default(now()) @map("created")
+
+  user User? @relation(fields: [UserID], references: [UserID])
+  team Team? @relation(fields: [TeamID], references: [TeamID])
+
+  @@index([TableName, RecordID])
+  @@index([UserID])
+  @@index([TeamID])
+  @@index([Created])
+  @@map("AuditLog")
+}
+
