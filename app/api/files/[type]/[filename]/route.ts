@@ -5,14 +5,13 @@ import { getServerSession } from "@/lib/auth-server";
 
 export async function GET(
     request: Request,
-    { params }: { params: { type: string; filename: string } }
+    { params }: { params: Promise<{ type: string; filename: string }> }
 ) {
     try {
         const session = await getServerSession();
         if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-        const type = params.type;
-        const filename = params.filename;
+        const { type, filename } = await params;
 
         // Path safety check
         if (filename.includes("..") || filename.includes("/") || filename.includes("\\")) {

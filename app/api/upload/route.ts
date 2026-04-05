@@ -3,13 +3,6 @@ import { writeFile, mkdir } from "fs/promises";
 import { join } from "path";
 import { getServerSession } from "@/lib/auth-server";
 
-export const config = {
-    api: {
-        bodyParser: {
-            sizeLimit: '10mb',
-        },
-    },
-};
 
 export async function POST(request: Request) {
     try {
