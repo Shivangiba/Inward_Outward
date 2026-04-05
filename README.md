@@ -22,9 +22,13 @@
 
 <br/>
 
-Test Login Credentials
-Username : Trial_Admin
-Password : 098765
+## 🔐 Demo Access
+
+To explore the application, use the following credentials:
+
+```bash
+Username: Trial_Admin
+Password: 098765
 
 </div>
 
