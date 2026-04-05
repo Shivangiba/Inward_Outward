@@ -77,11 +77,9 @@ export async function POST(req: Request) {
         // Determine redirect URL
         let redirectUrl = '/dashboard';
         const roleName = user.role.RoleName.toLowerCase().replace(/\s+/g, '');
-        if (roleName === 'superadmin' || roleName === 'admin') {
-            redirectUrl = '/masters/admins';
-        } else {
-            redirectUrl = '/dashboard';
-        }
+        
+        // Always redirect to dashboard as requested
+        redirectUrl = '/dashboard';
 
         // Return success with token and user info
         const response = NextResponse.json({

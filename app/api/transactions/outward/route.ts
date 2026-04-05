@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession, getTeamFilter } from "@/lib/auth-server";
 import { logAudit, AuditAction } from "@/lib/audit";
+import { getNextSequence } from "@/lib/sequence";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -13,6 +14,13 @@ export async function GET(request: Request) {
 
         const { searchParams } = new URL(request.url);
         const requestedTeamId = searchParams.get("teamId") ? parseInt(searchParams.get("teamId")!) : undefined;
+        const requestedOfficeId = searchParams.get("officeId") ? parseInt(searchParams.get("officeId")!) : undefined;
+        const isPreview = searchParams.get("preview") === "true";
+
+        if (isPreview && requestedOfficeId) {
+            const nextNo = await getNextSequence("OUT", requestedOfficeId, new Date());
+            return NextResponse.json({ nextNo });
+        }
 
         const teamFilter = await getTeamFilter(requestedTeamId);
         const outwards = await prisma.outward.findMany({
@@ -42,10 +50,16 @@ export async function POST(request: Request) {
         if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const body = await request.json();
+        const officeId = parseInt(body.FromInwardOutwardOfficeID) || 1;
+        const outwardDate = new Date(body.OutwardDate);
+
+        // Auto-generate OutwardNo if not provided
+        const finalOutwardNo = body.OutwardNo || await getNextSequence("OUT", officeId, outwardDate);
+
         const outward = await prisma.outward.create({
             data: {
-                OutwardNo: body.OutwardNo,
-                OutwardDate: new Date(body.OutwardDate),
+                OutwardNo: finalOutwardNo,
+                OutwardDate: outwardDate,
                 Subject: body.Subject,
                 Remarks: body.Remarks || body.Description,
                 LetterNo: body.OutwardLetterNo,
@@ -53,6 +67,13 @@ export async function POST(request: Request) {
                 FromInwardOutwardOfficeID: parseInt(body.FromInwardOutwardOfficeID) || 1,
                 InOutwardModeID: body.InOutwardModeID ? parseInt(body.InOutwardModeID) : null,
                 InOutwardFromToID: body.InOutwardFromToID ? parseInt(body.InOutwardFromToID) : null,
+                InwardID: body.InwardID ? parseInt(body.InwardID) : null,
+                OutwardDocumentPath: body.OutwardDocumentPath || null,
+                CourierReceiptPath: body.CourierReceiptPath || null,
+                IsReturned: body.IsReturned || false,
+                ReturnReason: body.ReturnReason || null,
+                ReturnAction: body.ReturnAction || null,
+                ReturnDate: body.ReturnDate ? new Date(body.ReturnDate) : null,
                 FinYearID: 1,
                 UserID: session.userId,
                 TeamID: session.teamId || null,
@@ -106,6 +127,13 @@ export async function PUT(request: Request) {
                 FromInwardOutwardOfficeID: parseInt(updateData.FromInwardOutwardOfficeID),
                 InOutwardModeID: updateData.InOutwardModeID ? parseInt(updateData.InOutwardModeID) : null,
                 InOutwardFromToID: updateData.InOutwardFromToID ? parseInt(updateData.InOutwardFromToID) : null,
+                InwardID: updateData.InwardID ? parseInt(updateData.InwardID) : null,
+                OutwardDocumentPath: updateData.OutwardDocumentPath || null,
+                CourierReceiptPath: updateData.CourierReceiptPath || null,
+                IsReturned: updateData.IsReturned || false,
+                ReturnReason: updateData.ReturnReason || null,
+                ReturnAction: updateData.ReturnAction || null,
+                ReturnDate: updateData.ReturnDate ? new Date(updateData.ReturnDate) : null,
             },
         });
 

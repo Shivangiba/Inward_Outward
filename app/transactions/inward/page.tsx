@@ -12,11 +12,12 @@ import {
     Edit2,
     Trash2,
     Save,
-    X,
     History,
     Info,
     AlertTriangle,
-    Download
+    Download,
+    X,
+    ExternalLink
 } from "lucide-react";
 import { utils, writeFile } from "xlsx";
 import { toast } from "sonner";
@@ -32,9 +33,11 @@ export default function InwardEntry() {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deletingItem, setDeletingItem] = useState<{ id: number | number[], name: string } | null>(null);
+    const [previewDoc, setPreviewDoc] = useState<{ url: string, title: string } | null>(null);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [isSelectionMode, setIsSelectionMode] = useState(false);
     const [userId, setUserId] = useState<number | null>(null);
+    const [isFetchingNo, setIsFetchingNo] = useState(false);
 
     // Masters for dropdowns
     const [offices, setOffices] = useState<any[]>([]);
@@ -52,7 +55,8 @@ export default function InwardEntry() {
         InwardLetterDate: "",
         ToInwardOutwardOfficeID: "",
         InOutwardModeID: "",
-        InOutwardFromToID: ""
+        InOutwardFromToID: "",
+        InwardDocumentPath: ""
     });
 
     const fetchData = async () => {
@@ -110,6 +114,28 @@ export default function InwardEntry() {
         const storedId = globalThis.localStorage?.getItem("userId");
         if (storedId) setUserId(parseInt(storedId));
     }, []);
+
+    const fetchNextNo = async (officeId: string) => {
+        if (!officeId || editingId) return;
+        setIsFetchingNo(true);
+        try {
+            const res = await fetch(`/api/transactions/inward?preview=true&officeId=${officeId}`);
+            if (res.ok) {
+                const data = await res.json();
+                setFormData(prev => ({ ...prev, InwardNo: data.nextNo }));
+            }
+        } catch (err) {
+            console.error("Failed to fetch next Inward No:", err);
+        } finally {
+            setIsFetchingNo(false);
+        }
+    };
+
+    useEffect(() => {
+        if (formData.ToInwardOutwardOfficeID && !editingId && showForm) {
+            fetchNextNo(formData.ToInwardOutwardOfficeID);
+        }
+    }, [formData.ToInwardOutwardOfficeID, showForm, editingId]);
 
     const handleReload = async () => {
         setIsRefreshing(true);
@@ -176,7 +202,8 @@ export default function InwardEntry() {
                     InwardLetterDate: "",
                     ToInwardOutwardOfficeID: offices[0]?.InwardOutwardOfficeID?.toString() || "",
                     InOutwardModeID: "",
-                    InOutwardFromToID: ""
+                    InOutwardFromToID: "",
+                    InwardDocumentPath: ""
                 });
                 toast.success(editingId ? "Inward log updated successfully!" : "New inward log registered!");
             } else {
@@ -202,7 +229,8 @@ export default function InwardEntry() {
             InwardLetterDate: entry.InwardLetterDate ? new Date(entry.InwardLetterDate).toISOString().split('T')[0] : "",
             ToInwardOutwardOfficeID: entry.ToInwardOutwardOfficeID?.toString() || "",
             InOutwardModeID: entry.InOutwardModeID?.toString() || "",
-            InOutwardFromToID: entry.InOutwardFromToID?.toString() || ""
+            InOutwardFromToID: entry.InOutwardFromToID?.toString() || "",
+            InwardDocumentPath: entry.InwardDocumentPath || ""
         });
         setShowForm(true);
     };
@@ -311,7 +339,8 @@ export default function InwardEntry() {
                                         InwardLetterDate: "",
                                         ToInwardOutwardOfficeID: offices[0]?.InwardOutwardOfficeID?.toString() || "",
                                         InOutwardModeID: "",
-                                        InOutwardFromToID: ""
+                                        InOutwardFromToID: "",
+                                        InwardDocumentPath: ""
                                     });
                                     setShowForm(true);
                                 }}
@@ -429,13 +458,37 @@ export default function InwardEntry() {
                                             <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
                                                 <Truck size={14} />
                                             </div>
-                                            <span className="text-sm font-medium text-slate-600">{entry.CourierCompanyName || "Direct"}</span>
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-medium text-slate-600">{entry.CourierCompanyName || "Direct"}</span>
+                                                {entry.isReplied && (
+                                                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded uppercase tracking-wider w-fit">
+                                                        Replied
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                     </td>
                                     <td className="px-8 py-6">
                                         <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-md">
                                             {entry.InwardLetterNo}
                                         </span>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        {entry.InwardDocumentPath ? (
+                                            <button 
+                                                onClick={() => {
+                                                    const parts = entry.InwardDocumentPath.split("/");
+                                                    const finalPath = `/api/files/inward/${parts[parts.length-1]}`;
+                                                    setPreviewDoc({ url: finalPath, title: entry.Subject });
+                                                }}
+                                                className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-lg hover:bg-blue-100 transition-colors"
+                                            >
+                                                <FileText size={12} />
+                                                View Doc
+                                            </button>
+                                        ) : (
+                                            <span className="text-xs text-slate-300">No Document</span>
+                                        )}
                                     </td>
                                     <td className="px-8 py-6 text-right">
                                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -508,13 +561,16 @@ export default function InwardEntry() {
                                         </select>
                                     </div>
                                     <div className="col-span-1">
-                                        <label className="block text-sm font-bold text-slate-700 mb-2 px-1">Inward Number</label>
+                                        <label className="block text-sm font-bold text-slate-700 mb-2 px-1">
+                                            Inward Number {isFetchingNo && <span className="text-[10px] text-blue-500 animate-pulse">(Generating...)</span>}
+                                        </label>
                                         <input
                                             type="text"
-                                            className="pastel-input"
-                                            placeholder="e.g. 2024/001"
+                                            className="pastel-input bg-slate-50 font-mono"
+                                            placeholder="Auto-generated"
                                             value={formData.InwardNo}
                                             onChange={(e) => setFormData({ ...formData, InwardNo: e.target.value })}
+                                            disabled={!editingId} // Disable manual input for new entries to maintain sequence
                                             required
                                         />
                                     </div>
@@ -622,6 +678,65 @@ export default function InwardEntry() {
                                             onChange={(e) => setFormData({ ...formData, InwardLetterDate: e.target.value })}
                                         />
                                     </div>
+                                    <div className="col-span-2">
+                                        <label className="block text-sm font-bold text-slate-700 mb-2 px-1">Upload Document Scan (PDF/JPG)</label>
+                                        <div className="flex items-center gap-4">
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                id="inward-doc"
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+                                                    const uploadFormData = new FormData();
+                                                    uploadFormData.append("file", file);
+                                                    uploadFormData.append("type", "inward");
+                                                    
+                                                    const loadingToast = toast.loading("Uploading document...");
+                                                    try {
+                                                        const res = await fetch("/api/upload", {
+                                                            method: "POST",
+                                                            body: uploadFormData
+                                                        });
+                                                        if (res.ok) {
+                                                            const data = await res.json();
+                                                            setFormData(prev => ({ ...prev, InwardDocumentPath: data.path }));
+                                                            toast.success("Document uploaded successfully!", { id: loadingToast });
+                                                        } else {
+                                                            toast.error("Upload failed.", { id: loadingToast });
+                                                        }
+                                                    } catch (err) {
+                                                        toast.error("Upload error.", { id: loadingToast });
+                                                    }
+                                                }}
+                                            />
+                                            <label 
+                                                htmlFor="inward-doc"
+                                                className="flex-1 flex items-center justify-center gap-2 border-2 border-dashed border-slate-200 rounded-2xl p-6 hover:border-blue-400 hover:bg-blue-50/30 transition-all cursor-pointer group"
+                                            >
+                                                {formData.InwardDocumentPath ? (
+                                                    <div className="flex items-center gap-2 text-emerald-600 font-bold">
+                                                        <FileText size={20} />
+                                                        Document Attached
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex flex-col items-center gap-1 text-slate-400 group-hover:text-blue-500">
+                                                        <Plus size={24} />
+                                                        <span className="text-sm font-bold">Click to Upload Scan</span>
+                                                    </div>
+                                                )}
+                                            </label>
+                                            {formData.InwardDocumentPath && (
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => setFormData(prev => ({ ...prev, InwardDocumentPath: "" }))}
+                                                    className="p-3 text-rose-500 hover:bg-rose-50 rounded-xl transition-colors"
+                                                >
+                                                    <Trash2 size={20} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -679,6 +794,64 @@ export default function InwardEntry() {
                                     {submitting ? "Deleting..." : "Delete Now"}
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Document Preview Modal */}
+            {previewDoc && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-6xl h-full rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+                        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-200">
+                                    <FileText size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-slate-900">Document Preview</h2>
+                                    <p className="text-sm text-slate-500 font-medium">{previewDoc.title}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <a 
+                                    href={previewDoc.url} 
+                                    download 
+                                    className="p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all text-slate-600 shadow-sm"
+                                    title="Download File"
+                                >
+                                    <Download size={20} />
+                                </a>
+                                <a 
+                                    href={previewDoc.url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all text-slate-600 shadow-sm"
+                                    title="Open in New Tab"
+                                >
+                                    <ExternalLink size={20} />
+                                </a>
+                                <button
+                                    onClick={() => setPreviewDoc(null)}
+                                    className="w-12 h-12 rounded-full flex items-center justify-center hover:bg-slate-50 text-slate-400 transition-all border border-transparent hover:border-slate-100 ml-4 font-light text-2xl"
+                                >
+                                    &times;
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex-1 bg-slate-100 p-8 flex items-center justify-center overflow-auto">
+                            {previewDoc.url.toLowerCase().endsWith('.pdf') ? (
+                                <iframe 
+                                    src={previewDoc.url} 
+                                    className="w-full h-full rounded-2xl border-none shadow-inner"
+                                    title="PDF Preview"
+                                />
+                            ) : (
+                                <img 
+                                    src={previewDoc.url} 
+                                    alt="Document Preview" 
+                                    className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
+                                />
+                            )}
                         </div>
                     </div>
                 </div>

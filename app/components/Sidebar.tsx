@@ -14,7 +14,8 @@ import {
     ExternalLink,
     ChevronRight,
     LogOut,
-    History
+    History,
+    FileText as SidebarIcon
 } from "lucide-react";
 import { deleteCookie } from "cookies-next";
 import UserAvatar from "./Avatar";
@@ -23,6 +24,7 @@ const menuItems = [
     { name: "Dashboard", href: "/dashboard", icon: Home },
     { name: "Inward Entry", href: "/transactions/inward", icon: Inbox },
     { name: "Outward Entry", href: "/transactions/outward", icon: Send },
+    { name: "Reports", href: "/reports", icon: SidebarIcon }, 
     { type: "divider", label: "Masters" },
     { name: "Offices", href: "/masters/office", icon: Building2 },
     { name: "Modes", href: "/masters/mode", icon: ExternalLink },
@@ -112,7 +114,8 @@ export default function Sidebar() {
             // Clerks only see Dashboard and Transaction entries
             return item.name === 'Dashboard' ||
                 item.name === 'Inward Entry' ||
-                item.name === 'Outward Entry';
+                item.name === 'Outward Entry' ||
+                item.name === 'Reports';
         }
         return true; // Admin sees everything
     });

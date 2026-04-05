@@ -56,7 +56,7 @@ export default function AuditLogsPage() {
         if (userRole === "clerk") {
             router.push("/dashboard");
         } else {
-            fetchLogs();
+            fetchLogs(page);
         }
     }, [page, actionFilter, tableFilter]);
 
@@ -125,7 +125,10 @@ export default function AuditLogsPage() {
                     <select
                         className="pastel-input py-2.5 text-sm w-48 bg-white"
                         value={actionFilter}
-                        onChange={(e) => setActionFilter(e.target.value)}
+                        onChange={(e) => {
+                            setActionFilter(e.target.value);
+                            setPage(1);
+                        }}
                     >
                         <option value="">All Actions</option>
                         <option value="CREATE">CREATE</option>
@@ -137,7 +140,10 @@ export default function AuditLogsPage() {
                     <select
                         className="pastel-input py-2.5 text-sm w-48 bg-white"
                         value={tableFilter}
-                        onChange={(e) => setTableFilter(e.target.value)}
+                        onChange={(e) => {
+                            setTableFilter(e.target.value);
+                            setPage(1);
+                        }}
                     >
                         <option value="">All Tables</option>
                         <option value="Inward">Inward</option>
@@ -148,6 +154,19 @@ export default function AuditLogsPage() {
                         <option value="CourierCompany">Courier</option>
                         <option value="InOutwardFromTo">From/To</option>
                     </select>
+                    {(actionFilter || tableFilter || searchTerm) && (
+                        <button 
+                            onClick={() => {
+                                setActionFilter("");
+                                setTableFilter("");
+                                setSearchTerm("");
+                                setPage(1);
+                            }}
+                            className="text-xs font-bold text-rose-500 hover:text-rose-600 px-4 py-2 bg-rose-50 rounded-xl transition-all"
+                        >
+                            Reset
+                        </button>
+                    )}
                 </div>
 
                 <div className="overflow-x-auto">

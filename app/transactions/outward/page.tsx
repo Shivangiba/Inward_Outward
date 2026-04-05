@@ -13,7 +13,10 @@ import {
     History,
     Info,
     AlertTriangle,
-    Download
+    Download,
+    FileText,
+    Receipt,
+    ExternalLink
 } from "lucide-react";
 import { utils, writeFile } from "xlsx";
 import { toast } from "sonner";
@@ -29,15 +32,18 @@ export default function OutwardEntry() {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [deletingItem, setDeletingItem] = useState<{ id: number | number[], name: string } | null>(null);
+    const [previewDoc, setPreviewDoc] = useState<{ url: string, title: string } | null>(null);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [isSelectionMode, setIsSelectionMode] = useState(false);
     const [userId, setUserId] = useState<number | null>(null);
+    const [isFetchingNo, setIsFetchingNo] = useState(false);
 
     // Masters
     const [offices, setOffices] = useState<any[]>([]);
     const [modes, setModes] = useState<any[]>([]);
     const [couriers, setCouriers] = useState<any[]>([]);
     const [fromTos, setFromTos] = useState<any[]>([]);
+    const [inwards, setInwards] = useState<any[]>([]);
 
     const [formData, setFormData] = useState({
         OutwardNo: "",
@@ -52,18 +58,26 @@ export default function OutwardEntry() {
         InOutwardModeID: "",
         InOutwardFromToID: "",
         Amount: "",
-        Weight: ""
+        Weight: "",
+        InwardID: "",
+        OutwardDocumentPath: "",
+        CourierReceiptPath: "",
+        IsReturned: false,
+        ReturnReason: "",
+        ReturnAction: "",
+        ReturnDate: ""
     });
 
     const fetchData = async () => {
         setLoading(true);
         try {
-            const [entriesRes, officesRes, modesRes, couriersRes, fromTosRes] = await Promise.all([
+            const [entriesRes, officesRes, modesRes, couriersRes, fromTosRes, inwardsRes] = await Promise.all([
                 fetch("/api/transactions/outward"),
                 fetch("/api/masters/office"),
                 fetch("/api/masters/mode"),
                 fetch("/api/masters/courier"),
-                fetch("/api/masters/from-to")
+                fetch("/api/masters/from-to"),
+                fetch("/api/transactions/inward")
             ]);
 
             if (entriesRes.ok) {
@@ -97,6 +111,11 @@ export default function OutwardEntry() {
                 const fData = await fromTosRes.json();
                 setFromTos(Array.isArray(fData) ? fData : []);
             }
+
+            if (inwardsRes.ok) {
+                const iData = await inwardsRes.json();
+                setInwards(Array.isArray(iData) ? iData : []);
+            }
         } catch (err) {
             console.error(err);
             toast.error("Failed to fetch data.");
@@ -110,6 +129,28 @@ export default function OutwardEntry() {
         const storedId = globalThis.localStorage?.getItem("userId");
         if (storedId) setUserId(parseInt(storedId));
     }, []);
+
+    const fetchNextNo = async (officeId: string) => {
+        if (!officeId || editingId) return;
+        setIsFetchingNo(true);
+        try {
+            const res = await fetch(`/api/transactions/outward?preview=true&officeId=${officeId}`);
+            if (res.ok) {
+                const data = await res.json();
+                setFormData(prev => ({ ...prev, OutwardNo: data.nextNo }));
+            }
+        } catch (err) {
+            console.error("Failed to fetch next Outward No:", err);
+        } finally {
+            setIsFetchingNo(false);
+        }
+    };
+
+    useEffect(() => {
+        if (formData.FromInwardOutwardOfficeID && !editingId && showForm) {
+            fetchNextNo(formData.FromInwardOutwardOfficeID);
+        }
+    }, [formData.FromInwardOutwardOfficeID, showForm, editingId]);
 
     const handleReload = async () => {
         setIsRefreshing(true);
@@ -177,7 +218,14 @@ export default function OutwardEntry() {
                     InOutwardModeID: "",
                     InOutwardFromToID: "",
                     Amount: "",
-                    Weight: ""
+                    Weight: "",
+                    InwardID: "",
+                    OutwardDocumentPath: "",
+                    CourierReceiptPath: "",
+                    IsReturned: false,
+                    ReturnReason: "",
+                    ReturnAction: "",
+                    ReturnDate: ""
                 });
                 toast.success(editingId ? "Outward log updated!" : "New outward dispatched!");
             } else {
@@ -206,7 +254,14 @@ export default function OutwardEntry() {
             InOutwardModeID: entry.InOutwardModeID?.toString() || "",
             InOutwardFromToID: entry.InOutwardFromToID?.toString() || "",
             Amount: entry.Amount?.toString() || "",
-            Weight: ""
+            Weight: "",
+            InwardID: entry.InwardID?.toString() || "",
+            OutwardDocumentPath: entry.OutwardDocumentPath || "",
+            CourierReceiptPath: entry.CourierReceiptPath || "",
+            IsReturned: entry.IsReturned || false,
+            ReturnReason: entry.ReturnReason || "",
+            ReturnAction: entry.ReturnAction || "",
+            ReturnDate: entry.ReturnDate ? new Date(entry.ReturnDate).toISOString().split('T')[0] : ""
         });
         setShowForm(true);
     };
@@ -321,7 +376,14 @@ export default function OutwardEntry() {
                                         InOutwardModeID: "",
                                         InOutwardFromToID: "",
                                         Amount: "",
-                                        Weight: ""
+                                        Weight: "",
+                                        InwardID: "",
+                                        OutwardDocumentPath: "",
+                                        CourierReceiptPath: "",
+                                        IsReturned: false,
+                                        ReturnReason: "",
+                                        ReturnAction: "",
+                                        ReturnDate: ""
                                     });
                                     setShowForm(true);
                                 }}
@@ -426,7 +488,16 @@ export default function OutwardEntry() {
                                             />
                                         </td>
                                     )}
-                                    <td className="px-8 py-6 text-center font-bold text-slate-900">{entry.OutwardNo}</td>
+                                    <td className="px-8 py-6 text-center font-bold text-slate-900">
+                                        <div className="flex flex-col items-center">
+                                            {entry.OutwardNo}
+                                            {entry.IsReturned && (
+                                                <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded uppercase tracking-wider w-fit">
+                                                    Returned
+                                                </span>
+                                            )}
+                                        </div>
+                                    </td>
                                     <td className="px-8 py-6 text-sm text-slate-500 font-medium">
                                         {new Date(entry.OutwardDate).toLocaleDateString()}
                                     </td>
@@ -442,6 +513,37 @@ export default function OutwardEntry() {
                                                 <Truck size={14} />
                                             </div>
                                             <span className="text-sm font-medium text-slate-600">{entry.CourierCompanyName || "Direct"}</span>
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6">
+                                        <div className="flex flex-col gap-1 text-[11px]">
+                                            {entry.OutwardDocumentPath && (
+                                                <button 
+                                                    onClick={() => {
+                                                        const parts = entry.OutwardDocumentPath.split("/");
+                                                        const finalPath = `/api/files/outward/${parts[parts.length-1]}`;
+                                                        setPreviewDoc({ url: finalPath, title: `Dispatch: ${entry.OutwardNo}` });
+                                                    }}
+                                                    className="font-bold text-blue-600 flex items-center gap-1 hover:underline"
+                                                >
+                                                    <FileText size={12} /> Letter
+                                                </button>
+                                            )}
+                                            {entry.CourierReceiptPath && (
+                                                <button 
+                                                    onClick={() => {
+                                                        const parts = entry.CourierReceiptPath.split("/");
+                                                        const finalPath = `/api/files/outward/${parts[parts.length-1]}`;
+                                                        setPreviewDoc({ url: finalPath, title: `Receipt: ${entry.CourierReceiptNo || entry.OutwardNo}` });
+                                                    }}
+                                                    className="font-bold text-orange-600 flex items-center gap-1 hover:underline"
+                                                >
+                                                    <Receipt size={12} /> Receipt
+                                                </button>
+                                            )}
+                                            {!entry.OutwardDocumentPath && !entry.CourierReceiptPath && (
+                                                <span className="text-slate-300 italic">No files</span>
+                                            )}
                                         </div>
                                     </td>
                                     <td className="px-8 py-6 text-right">
@@ -500,6 +602,19 @@ export default function OutwardEntry() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-8">
                                     <div className="col-span-1">
+                                        <label className="block text-sm font-bold text-slate-700 mb-2 px-1">
+                                            Outward Number {isFetchingNo && <span className="text-[10px] text-orange-500 animate-pulse">(Generating...)</span>}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="pastel-input bg-slate-50 font-mono"
+                                            placeholder="Auto-generated"
+                                            value={formData.OutwardNo}
+                                            onChange={(e) => setFormData({ ...formData, OutwardNo: e.target.value })}
+                                            disabled={!editingId}
+                                        />
+                                    </div>
+                                    <div className="col-span-1">
                                         <label className="block text-sm font-bold text-slate-700 mb-2 px-1">From Office</label>
                                         <select
                                             className="pastel-input py-3"
@@ -536,6 +651,21 @@ export default function OutwardEntry() {
                                             {fromTos.map(ft => (
                                                 <option key={ft.InOutwardFromToID} value={ft.InOutwardFromToID}>
                                                     {ft.InOutwardFromToName} {ft.Place ? `(${ft.Place})` : ""}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="col-span-2">
+                                        <label className="block text-sm font-bold text-slate-700 mb-2 px-1 text-blue-600">Reply to Inward Receipt (Optional)</label>
+                                        <select
+                                            className="pastel-input py-3 border-blue-100 bg-blue-50/20"
+                                            value={formData.InwardID}
+                                            onChange={(e) => setFormData({ ...formData, InwardID: e.target.value })}
+                                        >
+                                            <option value="">-- No Inward Link --</option>
+                                            {inwards.map(i => (
+                                                <option key={i.InwardID} value={i.InwardID}>
+                                                    {i.InwardNo} - {i.Subject} ({new Date(i.InwardDate).toLocaleDateString()})
                                                 </option>
                                             ))}
                                         </select>
@@ -610,7 +740,121 @@ export default function OutwardEntry() {
                                             onChange={(e) => setFormData({ ...formData, Amount: e.target.value })}
                                         />
                                     </div>
+                                    <div className="col-span-1">
+                                        <label className="block text-sm font-bold text-slate-700 mb-2 px-1 text-blue-600">Document Scan</label>
+                                        <div className="relative">
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                id="outward-doc"
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+                                                    const uploadFormData = new FormData();
+                                                    uploadFormData.append("file", file);
+                                                    uploadFormData.append("type", "outward");
+                                                    const loadingToast = toast.loading("Uploading letter scan...");
+                                                    try {
+                                                        const res = await fetch("/api/upload", { method: "POST", body: uploadFormData });
+                                                        if (res.ok) {
+                                                            const data = await res.json();
+                                                            setFormData(prev => ({ ...prev, OutwardDocumentPath: data.path }));
+                                                            toast.success("Letter uploaded!", { id: loadingToast });
+                                                        }
+                                                    } catch (err) { toast.error("Error", { id: loadingToast }); }
+                                                }}
+                                            />
+                                            <label htmlFor="outward-doc" className={`flex items-center justify-center gap-2 border-2 border-dashed rounded-2xl p-4 cursor-pointer transition-all ${formData.OutwardDocumentPath ? 'border-emerald-200 bg-emerald-50 text-emerald-600' : 'border-slate-100 hover:border-blue-300 text-slate-400'}`}>
+                                                <FileText size={18} />
+                                                <span className="text-xs font-bold">{formData.OutwardDocumentPath ? 'Attached' : 'Letter Scan'}</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div className="col-span-1">
+                                        <label className="block text-sm font-bold text-slate-700 mb-2 px-1 text-orange-600">Courier Receipt</label>
+                                        <div className="relative">
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                id="courier-receipt"
+                                                onChange={async (e) => {
+                                                    const file = e.target.files?.[0];
+                                                    if (!file) return;
+                                                    const uploadFormData = new FormData();
+                                                    uploadFormData.append("file", file);
+                                                    uploadFormData.append("type", "outward");
+                                                    const loadingToast = toast.loading("Uploading receipt...");
+                                                    try {
+                                                        const res = await fetch("/api/upload", { method: "POST", body: uploadFormData });
+                                                        if (res.ok) {
+                                                            const data = await res.json();
+                                                            setFormData(prev => ({ ...prev, CourierReceiptPath: data.path }));
+                                                            toast.success("Receipt uploaded!", { id: loadingToast });
+                                                        }
+                                                    } catch (err) { toast.error("Error", { id: loadingToast }); }
+                                                }}
+                                            />
+                                            <label htmlFor="courier-receipt" className={`flex items-center justify-center gap-2 border-2 border-dashed rounded-2xl p-4 cursor-pointer transition-all ${formData.CourierReceiptPath ? 'border-emerald-200 bg-emerald-50 text-emerald-600' : 'border-slate-100 hover:border-orange-300 text-slate-400'}`}>
+                                                <Receipt size={18} />
+                                                <span className="text-xs font-bold">{formData.CourierReceiptPath ? 'Attached' : 'Receipt Scan'}</span>
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
+                            </div>
+
+                            {/* Section 3: Return Management (Optional) */}
+                            <div className="space-y-6 pt-4 border-t border-slate-100">
+                                <div className="flex items-center justify-between bg-rose-50/30 p-4 rounded-2xl border border-rose-100/50">
+                                    <div className="flex items-center gap-3">
+                                        <div className={`p-2 rounded-xl ${formData.IsReturned ? 'bg-rose-100 text-rose-600' : 'bg-slate-100 text-slate-400'}`}>
+                                            <AlertTriangle size={20} />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-sm font-bold text-slate-900">Mark as Returned?</h3>
+                                            <p className="text-xs text-slate-500 font-medium">Use if the courier was undelivered or returned by recipient.</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, IsReturned: !prev.IsReturned }))}
+                                        className={`w-12 h-6 rounded-full transition-all relative ${formData.IsReturned ? 'bg-rose-500' : 'bg-slate-200'}`}
+                                    >
+                                        <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${formData.IsReturned ? 'left-7' : 'left-1'}`} />
+                                    </button>
+                                </div>
+
+                                {formData.IsReturned && (
+                                    <div className="grid grid-cols-2 gap-8 animate-in slide-in-from-top-4 duration-300">
+                                        <div className="col-span-1">
+                                            <label className="block text-sm font-bold text-rose-700 mb-2 px-1">Return Date</label>
+                                            <input
+                                                type="date"
+                                                className="pastel-input border-rose-200 focus:border-rose-400"
+                                                value={formData.ReturnDate}
+                                                onChange={(e) => setFormData({ ...formData, ReturnDate: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <label className="block text-sm font-bold text-rose-700 mb-2 px-1">Reason for Return</label>
+                                            <textarea
+                                                className="pastel-input border-rose-200 focus:border-rose-400 h-24"
+                                                placeholder="Address not found, Recipient refused, etc..."
+                                                value={formData.ReturnReason}
+                                                onChange={(e) => setFormData({ ...formData, ReturnReason: e.target.value })}
+                                            />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <label className="block text-sm font-bold text-emerald-700 mb-2 px-1">Action Taken</label>
+                                            <textarea
+                                                className="pastel-input border-emerald-200 focus:border-emerald-400 h-24"
+                                                placeholder="Resent to new address, Filed in records, etc..."
+                                                value={formData.ReturnAction}
+                                                onChange={(e) => setFormData({ ...formData, ReturnAction: e.target.value })}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="sticky bottom-0 bg-white/80 backdrop-blur-md pt-8 pb-12 border-t border-slate-50 flex gap-4">
@@ -667,6 +911,64 @@ export default function OutwardEntry() {
                                     {submitting ? "Deleting..." : "Delete Now"}
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Document Preview Modal */}
+            {previewDoc && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-8 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300">
+                    <div className="bg-white w-full max-w-6xl h-full rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
+                        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-2xl bg-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-200">
+                                    <FileText size={24} />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold text-slate-900">Document Preview</h2>
+                                    <p className="text-sm text-slate-500 font-medium">{previewDoc.title}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <a 
+                                    href={previewDoc.url} 
+                                    download 
+                                    className="p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all text-slate-600 shadow-sm"
+                                    title="Download File"
+                                >
+                                    <Download size={20} />
+                                </a>
+                                <a 
+                                    href={previewDoc.url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="p-3 bg-white border border-slate-200 rounded-2xl hover:bg-slate-50 transition-all text-slate-600 shadow-sm"
+                                    title="Open in New Tab"
+                                >
+                                    <ExternalLink size={20} />
+                                </a>
+                                <button
+                                    onClick={() => setPreviewDoc(null)}
+                                    className="w-12 h-12 rounded-full flex items-center justify-center hover:bg-slate-50 text-slate-400 transition-all border border-transparent hover:border-slate-100 ml-4 font-light text-2xl"
+                                >
+                                    &times;
+                                </button>
+                            </div>
+                        </div>
+                        <div className="flex-1 bg-slate-100 p-8 flex items-center justify-center overflow-auto">
+                            {previewDoc.url.toLowerCase().endsWith('.pdf') ? (
+                                <iframe 
+                                    src={previewDoc.url} 
+                                    className="w-full h-full rounded-2xl border-none shadow-inner"
+                                    title="PDF Preview"
+                                />
+                            ) : (
+                                <img 
+                                    src={previewDoc.url} 
+                                    alt="Document Preview" 
+                                    className="max-w-full max-h-full object-contain rounded-2xl shadow-2xl"
+                                />
+                            )}
                         </div>
                     </div>
                 </div>

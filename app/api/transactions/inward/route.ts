@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession, getTeamFilter } from "@/lib/auth-server";
 import { logAudit, AuditAction } from "@/lib/audit";
+import { getNextSequence } from "@/lib/sequence";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -13,6 +14,13 @@ export async function GET(request: Request) {
 
         const { searchParams } = new URL(request.url);
         const requestedTeamId = searchParams.get("teamId") ? parseInt(searchParams.get("teamId")!) : undefined;
+        const requestedOfficeId = searchParams.get("officeId") ? parseInt(searchParams.get("officeId")!) : undefined;
+        const isPreview = searchParams.get("preview") === "true";
+
+        if (isPreview && requestedOfficeId) {
+            const nextNo = await getNextSequence("INW", requestedOfficeId, new Date());
+            return NextResponse.json({ nextNo });
+        }
 
         const teamFilter = await getTeamFilter(requestedTeamId);
         const inwards = await prisma.inward.findMany({
@@ -21,7 +29,21 @@ export async function GET(request: Request) {
             take: 100,
         });
 
-        return NextResponse.json(inwards, {
+        // Check for replies (associated outwards)
+        const inwardIds = inwards.map((i: any) => i.InwardID);
+        const replies = await prisma.outward.findMany({
+            where: { InwardID: { in: inwardIds } },
+            select: { InwardID: true, OutwardNo: true }
+        });
+
+        const repliesMap = new Set(replies.map((r: any) => r.InwardID));
+        
+        const inwardsWithStatus = inwards.map((i: any) => ({
+            ...i,
+            isReplied: repliesMap.has(i.InwardID)
+        }));
+
+        return NextResponse.json(inwardsWithStatus, {
             headers: {
                 'Cache-Control': 'no-store, no-cache, must-revalidate',
             }
@@ -42,10 +64,16 @@ export async function POST(request: Request) {
         if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
         const body = await request.json();
+        const officeId = parseInt(body.ToInwardOutwardOfficeID) || 1;
+        const inwardDate = new Date(body.InwardDate);
+
+        // Auto-generate InwardNo if not provided
+        const finalInwardNo = body.InwardNo || await getNextSequence("INW", officeId, inwardDate);
+
         const inward = await prisma.inward.create({
             data: {
-                InwardNo: body.InwardNo,
-                InwardDate: new Date(body.InwardDate),
+                InwardNo: finalInwardNo,
+                InwardDate: inwardDate,
                 Subject: body.Subject,
                 Description: body.Description || body.Remarks,
                 CourierCompanyName: body.CourierCompanyName,
@@ -54,9 +82,10 @@ export async function POST(request: Request) {
                 ToInwardOutwardOfficeID: parseInt(body.ToInwardOutwardOfficeID) || 1,
                 InOutwardModeID: body.InOutwardModeID ? parseInt(body.InOutwardModeID) : null,
                 InOutwardFromToID: body.InOutwardFromToID ? parseInt(body.InOutwardFromToID) : null,
+                InwardDocumentPath: body.InwardDocumentPath || null,
                 FinYearID: 1,
                 UserID: session.userId,
-                TeamID: session.teamId || null, // SuperAdmin can create global entries if teamId is null
+                TeamID: session.teamId || null,
             },
         });
 
@@ -108,6 +137,7 @@ export async function PUT(request: Request) {
                 ToInwardOutwardOfficeID: parseInt(updateData.ToInwardOutwardOfficeID),
                 InOutwardModeID: updateData.InOutwardModeID ? parseInt(updateData.InOutwardModeID) : null,
                 InOutwardFromToID: updateData.InOutwardFromToID ? parseInt(updateData.InOutwardFromToID) : null,
+                InwardDocumentPath: updateData.InwardDocumentPath || null,
             },
         });
 
