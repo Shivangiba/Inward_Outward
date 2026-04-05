@@ -1,197 +1,431 @@
-# 📥 Inward-Outward Management System
+<div align="center">
+  <img src="public\Inward_Outward Banner.png" alt="Inward Outward Management System" width="100%"/>
+</div>
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.1.1-black?style=flat&logo=next.js)](https://nextjs.org/)
-[![Prisma](https://img.shields.io/badge/Prisma-7.3.0-2D3748?style=flat&logo=prisma)](https://www.prisma.io/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<br/>
 
-A robust, enterprise-grade digital correspondence tracking system designed to replace traditional physical registers. This system provides a centralized platform for managing all incoming (Inward) and outgoing (Outward) documents, letters, and parcels with full traceability and role-based access control.
+<img src="https://img.shields.io/badge/STATUS-PRODUCTION%20READY-6366f1?style=for-the-badge&labelColor=0a0a14&color=6366f1" />
+<img src="https://img.shields.io/badge/LICENSE-MIT-8b5cf6?style=for-the-badge&labelColor=0a0a14&color=8b5cf6" />
+<img src="https://img.shields.io/badge/NEXT.JS-16.1.1-ffffff?style=for-the-badge&logo=next.js&logoColor=white&labelColor=0a0a14" />
+<img src="https://img.shields.io/badge/PRISMA-7.3.0-2D3748?style=for-the-badge&logo=prisma&logoColor=white&labelColor=0a0a14" />
+<img src="https://img.shields.io/badge/POSTGRESQL-NEON-336791?style=for-the-badge&logo=postgresql&logoColor=white&labelColor=0a0a14" />
+
+<br/><br/>
+
+# 📬 Inward-Outward Management System
+
+### Enterprise-grade digital correspondence tracking — built to replace the physical register.
+
+<br/>
+
+[🚀 Live Demo](https://inward-outward.vercel.app/login) · [📖 Setup Guide](SETUP.md) · [📊 Project Summary](SUMMARY.md) · [🐛 Report Bug](https://github.com/Shivangiba/Inward_Outward/issues)
+
+<br/>
+
+Test Login Credentials
+Username : Trial_Admin
+Password : 098765
+
+</div>
+
+---
+
+## 🌟 What Is This?
+
+> **Every office has a register.** A big book where incoming letters get stamped, numbered, and logged by hand — then someone searches through 200 pages to find a document from last month.
+>
+> This system **replaces that book** with a fast, searchable, secure, and role-controlled digital platform. Every letter in. Every parcel out. Every action tracked. One dashboard.
+
+<br/>
 
 ---
 
 ## 📋 Table of Contents
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Database Schema](#database-schema)
-- [API Reference](#api-reference)
-- [User Roles & Permissions](#user-roles--permissions)
-- [Environment Variables](#environment-variables)
-- [Installation](#installation)
-- [Known Limitations / TODOs](#known-limitations--todos)
+
+| # | Section |
+|---|---------|
+| 1 | [✨ Features](#-features) |
+| 2 | [💻 Tech Stack](#-tech-stack) |
+| 3 | [🏗️ Architecture](#%EF%B8%8F-system-architecture) |
+| 4 | [📂 Project Structure](#-project-structure) |
+| 5 | [🗄️ Database Schema](#%EF%B8%8F-database-schema) |
+| 6 | [🔌 API Reference](#-api-reference) |
+| 7 | [👥 User Roles](#-user-roles--permissions) |
+| 8 | [⚙️ Environment Variables](#%EF%B8%8F-environment-variables) |
+| 9 | [🚀 Installation](#-installation) |
+| 10 | [⚠️ Known Limitations](#%EF%B8%8F-known-limitations--todos) |
+
+<br/>
 
 ---
 
 ## ✨ Features
 
+<table>
+<tr>
+<td width="50%">
+
 ### 🔐 Multi-Role Authentication
-- Secure JWT-based authentication with bcrypt password hashing.
-- Three tiers of access: **Super Admin**, **Admin**, and **Clerk**.
-- Persistent sessions using HTTP-only cookies.
+- JWT tokens stored in **HTTP-only cookies**
+- Passwords hashed with **bcrypt**
+- **3-tier access**: Super Admin → Admin → Clerk
+- Session validated **server-side** on every request
 
-### 📁 Document Management
-- **Inward Entry**: Digitally record incoming letters/parcels with auto-generated IDs (`INW/YYYY/NNN`).
-- **Outward Entry**: Track dispatches with courier details and delivery status (`OUT/YYYY/NNN`).
-- **Unified Transactions**: A "All Transactions" screen to view both inward and outward history in one place.
-- **Traceability**: Link outward dispatches to their corresponding inward documents.
+</td>
+<td width="50%">
 
-### 🛠 Master Data Management
-- **Office Master**: Configure multiple offices/institutes with opening sequence numbers.
-- **Mode Master**: Define delivery modes (e.g., Speed Post, Hand Delivery, Courier).
-- **Courier Master**: Maintain a registry of courier companies with contact info and rates.
-- **Contact Master**: Global registry for frequent 'From' and 'To' addresses.
+### 📁 Smart Document Entry
+- Auto-generated IDs: `INW/2026/001`, `OUT/2026/001`
+- Full **inward ↔ outward traceability** (link replies to originals)
+- Unified "All Transactions" view across both types
+- Document upload with file management
 
-### 📊 Reports & Dashboard
-- **Visual Analytics**: Interactive charts showing monthly inward vs. outward trends using Recharts.
-- **Exporting**: Generate and download reports in **Excel (.xlsx)** and **PDF** formats.
-- **Filtering**: Search by subject, letter number, date range, or sender/receiver.
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+### 🛠️ Master Data Management
+- **Office Master** — multi-institute support with opening sequences
+- **Mode Master** — Speed Post, Hand Delivery, Courier, etc.
+- **Courier Master** — company registry with contact & rate info
+- **Contact Master** — global From/To address directory
+
+</td>
+<td width="50%">
+
+### 📊 Reports & Analytics
+- Interactive **bar + donut charts** (Recharts)
+- Filter by subject, letter no., date range, sender/receiver
+- One-click export to **Excel (.xlsx)** and **PDF**
+- Monthly inward vs. outward trend visualization
+
+</td>
+</tr>
+<tr>
+<td width="50%">
 
 ### 🕵️ Audit Trail
-- Automated logging of all critical actions (CRUD, Login/Logout) with IP tracking and user-agent details.
+- Every **CRUD action** logged automatically
+- Captures **IP address** and user-agent
+- Login/Logout events tracked
+- Full history per record available to admins
+
+</td>
+<td width="50%">
+
+### 🛡️ Team-Based Data Isolation
+- Data siloed by **TeamID** at the database level
+- Super Admin sees everything; Admin/Clerk see only their team
+- No cross-team data leakage possible
+- Built-in "Filter Provider" pattern
+
+</td>
+</tr>
+</table>
+
+<br/>
 
 ---
 
 ## 💻 Tech Stack
 
-| Category | Technology | Purpose |
-| :--- | :--- | :--- |
-| **Frontend** | [Next.js 16.1.1](https://nextjs.org/) | React framework with App Router for SSR & dynamic routing. |
-| **Language** | [TypeScript](https://www.typescriptlang.org/) | Type safety and enhanced developer experience. |
-| **Styling** | [Tailwind CSS 4.0](https://tailwindcss.com/) | Modern utility-first CSS for premium UI design. |
-| **Database** | [PostgreSQL (Neon)](https://neon.tech/) | Cloud-native relational database for reliable storage. |
-| **ORM** | [Prisma 7.3.0](https://www.prisma.io/) | Type-safe database client and migration management. |
-| **Auth** | [JWT](https://jwt.io/) & [bcrypt](https://www.npmjs.com/package/bcryptjs) | Secure token-based auth and password encryption. |
-| **UI Components** | [Lucide React](https://lucide.dev/) | Clean, consistent iconography. |
-| **State/Data** | [Axios](https://axios-http.com/) & [Zod](https://zod.dev/) | API communication and schema validation. |
-| **Reporting** | [SheetJS (xlsx)](https://sheetjs.com/) | Client-side Excel generation. |
+<div align="center">
+
+| Layer | Technology | Why |
+|:---:|:---|:---|
+| 🖥️ **Frontend** | Next.js 16.1.1 (App Router) | SSR, dynamic routing, full-stack in one framework |
+| 🔷 **Language** | TypeScript | Type safety catches bugs before runtime |
+| 🎨 **Styling** | Tailwind CSS 4.0 | Utility-first, consistent, fast to build |
+| 🗃️ **Database** | PostgreSQL via [Neon](https://neon.tech) | Serverless, scalable, cloud-native |
+| 🔗 **ORM** | Prisma 7.3.0 | Type-safe queries, migrations, schema management |
+| 🔑 **Auth** | JWT + bcrypt.js | Industry-standard token auth + secure hashing |
+| 📡 **HTTP** | Axios + Zod | Typed API calls with schema validation |
+| 📈 **Charts** | Recharts | Responsive, composable chart library |
+| 📤 **Export** | SheetJS (xlsx) | Client-side Excel generation |
+| 🎯 **Icons** | Lucide React | Clean, consistent SVG icon set |
+
+</div>
+
+<br/>
 
 ---
 
 ## 🏗️ System Architecture
 
-The system follows a modern **Full-Stack Next.js** architecture with a strong emphasis on server-side security and team-based data isolation.
+```
+┌─────────────────────────────────────────────────────────┐
+│                    CLIENT (Browser)                      │
+│         Next.js Pages + React Components                 │
+│              Axios → /api/* routes                       │
+└──────────────────────┬──────────────────────────────────┘
+                       │  HTTP (JWT Cookie)
+┌──────────────────────▼──────────────────────────────────┐
+│                  MIDDLEWARE LAYER                         │
+│    middleware.ts — validates JWT on every request        │
+│    Blocks: /dashboard, /masters, /transactions           │
+└──────────────────────┬──────────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────────┐
+│               API ROUTES (Next.js)                       │
+│  /api/auth  /api/masters  /api/transactions  /api/reports│
+│       ↓ getServerSession() + getTeamFilter()             │
+│       ↓ Never trusts client-sent IDs                     │
+└──────────────────────┬──────────────────────────────────┘
+                       │  Prisma ORM
+┌──────────────────────▼──────────────────────────────────┐
+│              PostgreSQL (Neon Cloud)                     │
+│   Team-filtered queries → no cross-team data leakage    │
+└─────────────────────────────────────────────────────────┘
+```
 
-### 🔐 Authentication & Security
-- **JWT Strategy**: Secure tokens are generated upon login and stored in HTTP-only cookies.
-- **Middleware Protection**: All routes under `/dashboard`, `/masters`, and `/transactions` are protected by `middleware.ts` which validates the JWT signature and expiration.
-- **Server-Side Sessions**: The backend never trusts client-sent IDs. It extracts the `userId` and `teamId` directly from the secure cookie for every database query.
+### 🔑 Key Design Decisions
 
-### 🛡️ Team-Based Data Isolation
-Data is filtered at the database level using a sophisticated "Filter Provider" pattern:
-- **Super Admin**: Global access to all records across all teams.
-- **Admin**: Restricted to records belonging to their specific `TeamID`.
-- **Clerk**: Restricted to records belonging to their specific `TeamID`.
+| Decision | Implementation |
+|:---|:---|
+| **No stale data** | `revalidate = 0` on all API routes + `cache: "no-store"` on fetches |
+| **Server-side trust** | `userId` and `teamId` always extracted from secure cookie, never from request body |
+| **Crash prevention** | All API responses validated as arrays before `.map()` — graceful fallback to `[]` |
+| **Role isolation** | Filter Provider pattern injects `WHERE teamId = ?` at query level for non-Super-Admins |
 
-### 🚀 Data Fetching Pattern
-To prevent "Stale Data" issues, the system implements a strict **No-Cache Policy**:
-- **API Routes**: Forced dynamic rendering (`revalidate = 0`) with explicit `Cache-Control` headers.
-- **Client Fetches**: Uses `cache: "no-store"` to ensure the browser always receives the latest data from the server.
+<br/>
 
 ---
 
 ## 📂 Project Structure
 
-```text
-├── actions/             # Server Actions for form handling and data mutations
-├── app/                 # Next.js App Router (Pages & API Routes)
-│   ├── api/             # Backend logic: /auth, /masters, /transactions, /dashboard
-│   ├── dashboard/       # Main statistical overview page
-│   ├── masters/         # Management pages for offices, couriers, modes, users
-│   ├── transactions/    # Inward, Outward, and Unified transaction screens
-│   ├── reports/         # Dynamic report generation and export interface
-│   ├── login/           # Authentication portal
-│   └── layout.tsx       # Global layout with Navigation and providers
-├── components/          # Reusable UI components (Modals, Tables, Forms)
-├── lib/                 # Core utilities: axios, prisma, auth-server, sequence logic
-├── prisma/              # Database schema definition and seed scripts
-├── public/              # Static assets (images, icons)
-├── middleware.ts        # Route protection and session validation
-└── .env                 # Environment configuration (secrets)
+```bash
+inward-outward/
+│
+├── 📁 app/                          # Next.js App Router
+│   ├── 📁 api/                      # All backend logic lives here
+│   │   ├── auth/login/route.ts      # JWT generation + bcrypt verify
+│   │   ├── transactions/
+│   │   │   ├── inward/route.ts      # Inward CRUD + auto-numbering
+│   │   │   └── outward/route.ts     # Outward CRUD + delivery status
+│   │   ├── masters/                 # Office, Mode, Courier, FromTo APIs
+│   │   ├── dashboard/route.ts       # Stats aggregation
+│   │   ├── reports/route.ts         # Excel/PDF generation
+│   │   ├── upload/route.ts          # File upload handler
+│   │   └── files/[type]/[filename]/ # File serving
+│   │
+│   ├── 📁 dashboard/page.tsx        # Analytics overview
+│   ├── 📁 transactions/
+│   │   ├── inward/page.tsx          # Inward list + entry form
+│   │   └── outward/page.tsx         # Outward list + entry form
+│   ├── 📁 masters/
+│   │   ├── office/                  # Office management
+│   │   ├── courier-companies/       # Courier registry
+│   │   ├── modes/                   # Mode management
+│   │   ├── from-to/                 # Contact directory
+│   │   ├── admin-master/            # User management
+│   │   └── audit-logs/              # Action history
+│   ├── 📁 reports/page.tsx          # Export interface
+│   └── 📁 login/page.tsx            # Auth portal
+│
+├── 📁 actions/                      # Reusable server-action helpers
+├── 📁 components/                   # Shared UI: Sidebar, Modals, Tables
+├── 📁 lib/
+│   ├── prisma.ts                    # Prisma client singleton
+│   ├── auth-server.ts               # getServerSession, getTeamFilter
+│   └── sequence.ts                  # Auto-number generation logic
+├── 📁 prisma/
+│   ├── schema.prisma                # Full DB schema
+│   └── seed.ts                      # Default roles, teams, users
+│
+├── middleware.ts                    # Route protection
+├── SETUP.md                         # Developer setup guide
+├── SUMMARY.md                       # Non-technical overview
+└── ARCHITECTURE.md                  # Deep architectural notes
 ```
+
+<br/>
 
 ---
 
-## 🗄 Database Schema Overview
+## 🗄️ Database Schema
 
-The system uses a highly relational schema to ensure data integrity and team-based isolation:
+```
+┌──────────┐     ┌──────────┐     ┌──────────────────────┐
+│   Role   │────▶│   User   │────▶│        Team          │
+│          │     │  Email   │     │  ManagerUserID       │
+│ SuperAdmin     │  Password│     └──────────────────────┘
+│ Admin    │     │  RoleID  │
+│ Clerk    │     │  TeamID  │
+└──────────┘     └────┬─────┘
+                      │
+          ┌───────────┼───────────┐
+          ▼           ▼           ▼
+    ┌──────────┐ ┌──────────┐ ┌──────────────┐
+    │  Inward  │ │ Outward  │ │  AuditLog    │
+    │ InwardNo │ │OutwardNo │ │  Action      │
+    │ Subject  │ │CourierID │ │  UserID      │
+    │ ModeID   │ │TrackingID│ │  IPAddress   │
+    │ OfficeID │ │InwardID? │ │  Timestamp   │
+    └──────────┘ └──────────┘ └──────────────┘
+          │           │
+          ▼           ▼
+    ┌────────────────────────────┐
+    │     Master Tables          │
+    │  InwardOutwardOffice       │
+    │  InOutwardMode             │
+    │  InOutwardFromTo           │
+    │  CourierCompany            │
+    └────────────────────────────┘
+```
 
-- **User**: Core entity with `Email`, `Password`, and `RoleID`.
-- **Role**: Defines permissions (`Super Admin`, `Admin`, `Clerk`).
-- **Team**: Enables organizational isolation; users belong to a team (except Super Admins).
-- **Inward**: Tracks incoming documents. Fields: `InwardNo`, `Subject`, `InwardDate`, `ToInwardOutwardOfficeID`.
-- **Outward**: Tracks outgoing documents. Fields: `OutwardNo`, `CourierCompanyID`, `TrackingID`, `DeliveryStatus`.
-- **InwardOutwardOffice**: Master table for institutes participating in the system.
-- **AuditLog**: Stores every change for security compliance.
+> **Key relationship**: `Outward.InwardID` is optional — when set, it creates a traceable thread linking a reply to its original incoming document.
+
+<br/>
 
 ---
 
 ## 🔌 API Reference
 
-| Method | Endpoint | Description | Auth Required |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/login` | Authenticate user and set token cookie | No |
-| `GET` | `/api/dashboard` | Fetch statistical data for the dashboard | Yes |
-| `GET` | `/api/masters/office` | List all registered offices | Yes |
-| `POST` | `/api/transactions/inward` | Create a new inward entry | Yes |
-| `POST` | `/api/transactions/outward` | Create a new outward entry | Yes |
-| `GET` | `/api/transactions` | Fetch unified history of all activity | Yes |
-| `GET` | `/api/reports` | Export data to Excel/PDF | Yes |
+### 🔐 Auth
+| Method | Endpoint | Description | Auth |
+|:---:|:---|:---|:---:|
+| `POST` | `/api/auth/login` | Authenticate + set JWT cookie | ❌ |
+| `POST` | `/api/auth/logout` | Clear session cookie | ✅ |
+| `GET` | `/api/auth/profile` | Current user info | ✅ |
 
-*Base URL: `/api` (referenced as `/api/v1` in internal documentation)*
+### 📥 Transactions
+| Method | Endpoint | Description | Auth |
+|:---:|:---|:---|:---:|
+| `GET` | `/api/transactions/inward` | List inward entries (team-filtered) | ✅ |
+| `POST` | `/api/transactions/inward` | Create inward entry + auto-number | ✅ |
+| `PUT` | `/api/transactions/inward` | Update inward entry | ✅ |
+| `GET` | `/api/transactions/outward` | List outward entries (team-filtered) | ✅ |
+| `POST` | `/api/transactions/outward` | Create outward entry + auto-number | ✅ |
+| `PUT` | `/api/transactions/outward` | Update + delivery status | ✅ |
+
+### 🛠️ Masters
+| Method | Endpoint | Description | Auth |
+|:---:|:---|:---|:---:|
+| `GET/POST/PUT/DELETE` | `/api/masters/office` | Office CRUD | ✅ |
+| `GET/POST/PUT/DELETE` | `/api/masters/mode` | Mode CRUD | ✅ |
+| `GET/POST/PUT/DELETE` | `/api/masters/courier` | Courier CRUD | ✅ |
+| `GET/POST/PUT/DELETE` | `/api/masters/from-to` | Contact CRUD | ✅ |
+
+### 📊 Reports & Dashboard
+| Method | Endpoint | Description | Auth |
+|:---:|:---|:---|:---:|
+| `GET` | `/api/dashboard` | Stats summary (counts, trends) | ✅ |
+| `GET` | `/api/reports` | Generate Excel/PDF export | ✅ |
+| `POST` | `/api/upload` | Upload document file | ✅ |
+
+<br/>
 
 ---
 
 ## 👥 User Roles & Permissions
 
-| Role | Access Level | Description |
-| :--- | :--- | :--- |
-| **Super Admin** | Full System | Manage Teams, Roles, and view global audit logs. Control across all offices. |
-| **Admin** | Team/Office Level | Manage office masters, add users to their team, view team reports. |
-| **Clerk** | Entry Level | Perform Inward/Outward entries and view their own/team history. |
+```
+┌─────────────────────────────────────────────────────────────┐
+│  🔴 SUPER ADMIN — Global Access                              │
+│  ✅ All teams  ✅ All records  ✅ System settings            │
+│  ✅ Manage all users  ✅ View all audit logs                 │
+├─────────────────────────────────────────────────────────────┤
+│  🟡 ADMIN — Team/Office Level                                │
+│  ✅ Own team's records  ✅ Manage office masters             │
+│  ✅ Add clerks to team  ✅ Team reports & exports            │
+├─────────────────────────────────────────────────────────────┤
+│  🟢 CLERK — Entry Level                                      │
+│  ✅ Create inward/outward entries                            │
+│  ✅ View own team's history  ❌ Cannot manage masters        │
+└─────────────────────────────────────────────────────────────┘
+```
+
+<br/>
 
 ---
 
 ## ⚙️ Environment Variables
 
-Copy `.env.shared` or create a `.env` file in the root:
+Create a `.env` file in the root (use `.env.shared` as template):
 
-| Variable | Description | Example |
-| :--- | :--- | :--- |
-| `DATABASE_URL` | PostgreSQL connection string (Neon) | `postgresql://user:pass@host/db?sslmode=require` |
-| `JWT_SECRET` | Secret key for signing tokens | `a_super_secure_random_string` |
-| `NEXT_PUBLIC_API_URL`| (Optional) Frontend API endpoint | `/api` |
+```env
+# ─── Database ──────────────────────────────────────────────
+DATABASE_URL="postgresql://user:password@host/dbname?sslmode=require"
+
+# ─── Authentication ────────────────────────────────────────
+JWT_SECRET="your-super-long-random-secret-key-here"
+
+# ─── Optional ──────────────────────────────────────────────
+NEXT_PUBLIC_API_URL="/api"
+```
+
+> ⚠️ **Never commit your `.env` file.** It is in `.gitignore` by default.
+
+<br/>
 
 ---
 
-## 🛠 Installation
+## 🚀 Installation
 
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/Shivangiba/Inward_Outward.git
+cd Inward_Outward
 
-# Install dependencies
+# 2. Install dependencies
 npm install
 
-# Run database migrations
-npx prisma migrate dev
+# 3. Set up environment variables
+cp .env.shared .env
+# → Edit .env and add your DATABASE_URL and JWT_SECRET
 
-# Seed the database
+# 4. Set up the database
+npx prisma generate
+npx prisma migrate dev --name init
+
+# 5. Seed default data (Roles, Teams, Test Users)
 npx prisma db seed
 
-# Start development server
+# 6. Start the development server
 npm run dev
 ```
+
+🌐 Open **[http://localhost:3000](http://localhost:3000)**
+
+### 🔑 Default Login Credentials (after seed)
+
+| Role | Email | Password |
+|:---:|:---|:---|
+| 🔴 Super Admin | `super@123.com` | `super123` |
+| 🟡 Admin | `admin@123.com` | `admin123` |
+| 🟢 Clerk | `clerk@123.com` | `clerk123` |
+
+<br/>
 
 ---
 
 ## ⚠️ Known Limitations / TODOs
 
-- 🔳 **Document Preview**: PDF and Image preview modals are currently under implementation.
-- 🔳 **Email Notifications**: Automated alerts for high-priority inward documents.
-- 🔳 **Mobile App**: PWA support for scanning courier barcodes via phone camera.
-- 🔳 **Advanced Search**: Implementation of ElasticSearch for multi-field full-text search.
+| Status | Feature | Notes |
+|:---:|:---|:---|
+| 🔄 In Progress | **Document Preview** | PDF/Image preview modals being implemented |
+| 📋 Planned | **Email Notifications** | Alerts for high-priority inward documents |
+| 📋 Planned | **PWA / Mobile** | Barcode scanning via phone camera |
+| 📋 Planned | **Advanced Search** | Full-text search with ElasticSearch |
+| 📋 Planned | **AI Subject Extraction** | Auto-fill subject from scanned document |
+
+<br/>
 
 ---
 
 ## 📄 License
-This project is licensed under the MIT License.
+
+This project is licensed under the **MIT License** — feel free to use, fork, and build on it.
+
+---
+
+<div align="center">
+
+**Built with 💜 by [Shivangiba Jadeja](https://github.com/Shivangiba)**
+
+⭐ If this project helped you, consider giving it a star!
+
+[![GitHub stars](https://img.shields.io/github/stars/Shivangiba/Inward_Outward?style=social)](https://github.com/Shivangiba/Inward_Outward/stargazers)
+
+</div>
