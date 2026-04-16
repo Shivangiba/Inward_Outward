@@ -273,7 +273,7 @@ export default function OutwardEntry() {
 
     const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
-            setSelectedIds(filteredEntries.map(entry => entry.OutwardID));
+            setSelectedIds(filteredEntries.map(entry => entry.OutwardID || entry.id).filter(id => id !== undefined));
         } else {
             setSelectedIds([]);
         }
@@ -476,8 +476,8 @@ export default function OutwardEntry() {
                                         <p className="text-lg font-bold text-slate-400">No outward records found</p>
                                     </td>
                                 </tr>
-                            ) : filteredEntries.map((entry) => (
-                                <tr key={entry.OutwardID} className={`hover:bg-slate-50/30 transition-colors group ${selectedIds.includes(entry.OutwardID) ? 'bg-orange-50/30' : ''}`}>
+                            ) : filteredEntries.map((entry, i) => (
+                                <tr key={entry.OutwardID || entry.id || `outward-${i}`} className={`hover:bg-slate-50/30 transition-colors group ${selectedIds.includes(entry.OutwardID || entry.id) ? 'bg-orange-50/30' : ''}`}>
                                     {isSelectionMode && (
                                         <td className="px-8 py-6 text-center">
                                             <input
@@ -623,8 +623,8 @@ export default function OutwardEntry() {
                                             required
                                         >
                                             <option value="">Select Office...</option>
-                                            {offices.map(o => (
-                                                <option key={o.InwardOutwardOfficeID} value={o.InwardOutwardOfficeID}>
+                                            {offices.map((o, i) => (
+                                                <option key={o.InwardOutwardOfficeID || `office-${i}`} value={o.InwardOutwardOfficeID}>
                                                     {o.OfficeName}
                                                 </option>
                                             ))}
@@ -648,8 +648,8 @@ export default function OutwardEntry() {
                                             onChange={(e) => setFormData({ ...formData, InOutwardFromToID: e.target.value })}
                                         >
                                             <option value="">Select Receiver from Master...</option>
-                                            {fromTos.map(ft => (
-                                                <option key={ft.InOutwardFromToID} value={ft.InOutwardFromToID}>
+                                            {fromTos.map((ft, i) => (
+                                                <option key={ft.InOutwardFromToID || `ft-${i}`} value={ft.InOutwardFromToID}>
                                                     {ft.InOutwardFromToName} {ft.Place ? `(${ft.Place})` : ""}
                                                 </option>
                                             ))}
@@ -663,8 +663,8 @@ export default function OutwardEntry() {
                                             onChange={(e) => setFormData({ ...formData, InwardID: e.target.value })}
                                         >
                                             <option value="">-- No Inward Link --</option>
-                                            {inwards.map(i => (
-                                                <option key={i.InwardID} value={i.InwardID}>
+                                            {inwards.map((i, idx) => (
+                                                <option key={i.InwardID || `inw-link-${idx}`} value={i.InwardID}>
                                                     {i.InwardNo} - {i.Subject} ({new Date(i.InwardDate).toLocaleDateString()})
                                                 </option>
                                             ))}
@@ -698,8 +698,8 @@ export default function OutwardEntry() {
                                             onChange={(e) => setFormData({ ...formData, InOutwardModeID: e.target.value })}
                                         >
                                             <option value="">Select Mode...</option>
-                                            {modes.map(m => (
-                                                <option key={m.InOutwardModeID} value={m.InOutwardModeID}>
+                                            {modes.map((m, i) => (
+                                                <option key={m.InOutwardModeID || `mode-${i}`} value={m.InOutwardModeID}>
                                                     {m.InOutwardModeName}
                                                 </option>
                                             ))}
@@ -713,8 +713,8 @@ export default function OutwardEntry() {
                                             onChange={(e) => setFormData({ ...formData, CourierCompanyName: e.target.value })}
                                         >
                                             <option value="">Select Company...</option>
-                                            {couriers.map(c => (
-                                                <option key={c.CourierCompanyID} value={c.CourierCompanyName}>
+                                            {couriers.map((c, i) => (
+                                                <option key={c.CourierCompanyID || `courier-${i}`} value={c.CourierCompanyName}>
                                                     {c.CourierCompanyName}
                                                 </option>
                                             ))}

@@ -16,10 +16,12 @@ import {
     Loader2,
     History,
     AlertTriangle,
-    X,
-    CheckCircle2,
-    XCircle
+    XCircle,
+    UserX,
+    UserCheck,
+    Power
 } from "lucide-react";
+import { toast } from "sonner";
 
 const useAdmins = () => {
     const [users, setUsers] = useState<any[]>([]);
@@ -60,7 +62,8 @@ export default function AdminMaster() {
         Email: "",
         Password: "",
         RoleID: "",
-        TeamID: ""
+        TeamID: "",
+        IsActive: true
     });
     const [showTeamForm, setShowTeamForm] = useState(false);
     const [newTeamName, setNewTeamName] = useState("");
@@ -176,7 +179,8 @@ export default function AdminMaster() {
                     Email: "",
                     Password: "",
                     RoleID: allowedRoles[0]?.RoleID.toString() || "",
-                    TeamID: teams[0]?.TeamID.toString() || ""
+                    TeamID: teams[0]?.TeamID.toString() || "",
+                    IsActive: true
                 });
             } else {
                 const errorData = await res.json();
@@ -189,6 +193,22 @@ export default function AdminMaster() {
         }
     };
 
+    const handleToggleStatus = async (user: any) => {
+        try {
+            const res = await fetch("/api/masters/admins", {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ ...user, IsActive: !user.IsActive }),
+            });
+            if (res.ok) {
+                fetchUsers();
+                toast.success(`User ${user.Name} ${!user.IsActive ? 'Activated' : 'Deactivated'}`);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     const handleEdit = (user: any) => {
         setEditingId(user.UserID);
         setFormData({
@@ -196,7 +216,8 @@ export default function AdminMaster() {
             Email: user.Email,
             Password: "", // Reset password on edit for security
             RoleID: user.RoleID.toString(),
-            TeamID: user.TeamID?.toString() || ""
+            TeamID: user.TeamID?.toString() || "",
+            IsActive: user.IsActive
         });
         setShowForm(true);
     };
@@ -241,7 +262,7 @@ export default function AdminMaster() {
 
     const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
-            setSelectedIds(filteredUsers.map(u => u.UserID));
+            setSelectedIds(filteredUsers.map(u => u.UserID || u.id).filter(id => id !== undefined));
         } else {
             setSelectedIds([]);
         }
@@ -411,15 +432,15 @@ export default function AdminMaster() {
                                 <tr>
                                     <td colSpan={isSelectionMode ? 6 : 5} className="px-8 py-10 text-center text-slate-400">No users matching "{searchTerm}" found.</td>
                                 </tr>
-                            ) : filteredUsers.map((user) => (
-                                <tr key={user.UserID} className={`hover:bg-slate-50/30 transition-colors group ${selectedIds.includes(user.UserID) ? 'bg-blue-50/30' : ''}`}>
+                            ) : filteredUsers.map((user, i) => (
+                                <tr key={user.UserID || user.id || `user-${i}`} className={`hover:bg-slate-50/30 transition-colors group ${selectedIds.includes(user.UserID || user.id) ? 'bg-blue-50/30' : ''}`}>
                                     {isSelectionMode && (
                                         <td className="px-8 py-6 text-center">
                                             <input
                                                 type="checkbox"
                                                 className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                                                checked={selectedIds.includes(user.UserID)}
-                                                onChange={() => handleSelectRow(user.UserID)}
+                                                checked={selectedIds.includes(user.UserID || user.id)}
+                                                onChange={() => handleSelectRow(user.UserID || user.id)}
                                             />
                                         </td>
                                     )}
@@ -458,7 +479,14 @@ export default function AdminMaster() {
                                         </span>
                                     </td>
                                     <td className="px-8 py-6 text-right">
-                                        <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <div className="flex items-center justify-end gap-2">
+                                             <button
+                                                onClick={() => handleToggleStatus(user)}
+                                                className={`p-2 rounded-lg transition-all border border-transparent shadow-sm ${user.IsActive ? 'text-emerald-600 hover:bg-emerald-50 hover:border-emerald-100' : 'text-slate-400 hover:text-slate-900 hover:bg-white hover:border-slate-100'}`}
+                                                title={user.IsActive ? "Deactivate User" : "Activate User"}
+                                            >
+                                                <Power size={16} />
+                                            </button>
                                             <button
                                                 onClick={() => handleEdit(user)}
                                                 className="p-2 text-slate-400 hover:text-slate-900 hover:bg-white rounded-lg transition-all border border-transparent hover:border-slate-100 shadow-sm"
@@ -466,7 +494,7 @@ export default function AdminMaster() {
                                                 <Edit2 size={16} />
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(user.UserID, user.Name)}
+                                                onClick={() => handleDelete(user.UserID || user.id, user.Name)}
                                                 className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all border border-transparent hover:border-rose-100 shadow-sm"
                                             >
                                                 <Trash2 size={16} />
@@ -582,8 +610,8 @@ export default function AdminMaster() {
                                                         }
                                                         return true;
                                                     })
-                                                    .map(role => (
-                                                        <option key={role.RoleID} value={role.RoleID}>
+                                                    .map((role, idx) => (
+                                                        <option key={role.RoleID || `role-${idx}`} value={role.RoleID}>
                                                             {role.RoleName.toLowerCase().replace(/\s+/g, '') === 'superadmin' ? 'Super Admin' : role.RoleName.charAt(0).toUpperCase() + role.RoleName.slice(1)}
                                                         </option>
                                                     ))}
@@ -610,8 +638,8 @@ export default function AdminMaster() {
                                                 required
                                             >
                                                 {teams.length === 0 && <option value="">No teams available</option>}
-                                                {teams.map(team => (
-                                                    <option key={team.TeamID} value={team.TeamID}>
+                                                {teams.map((team, idx) => (
+                                                    <option key={team.TeamID || `team-${idx}`} value={team.TeamID}>
                                                         {team.TeamName}
                                                     </option>
                                                 ))}
@@ -619,6 +647,21 @@ export default function AdminMaster() {
                                         </div>
                                     </>
                                 )}
+                                <div className="col-span-2">
+                                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                                        <div>
+                                            <p className="font-bold text-slate-800">Account Status</p>
+                                            <p className="text-xs text-slate-500">Enable or disable user access to the system.</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData({ ...formData, IsActive: !formData.IsActive })}
+                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ring-2 ring-offset-2 ${formData.IsActive ? 'bg-emerald-500 ring-emerald-100' : 'bg-slate-300 ring-slate-100'}`}
+                                        >
+                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.IsActive ? 'translate-x-6' : 'translate-x-1'}`} />
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="pt-4 flex gap-3">

@@ -242,7 +242,7 @@ export default function InwardEntry() {
 
     const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.checked) {
-            setSelectedIds(filteredEntries.map(entry => entry.InwardID));
+            setSelectedIds(filteredEntries.map(entry => entry.InwardID || entry.id).filter(id => id !== undefined));
         } else {
             setSelectedIds([]);
         }
@@ -433,8 +433,8 @@ export default function InwardEntry() {
                                         <p className="text-lg font-bold text-slate-400">No inward records found</p>
                                     </td>
                                 </tr>
-                            ) : filteredEntries.map((entry) => (
-                                <tr key={entry.InwardID} className={`hover:bg-slate-50/30 transition-colors group ${selectedIds.includes(entry.InwardID) ? 'bg-blue-50/30' : ''}`}>
+                            ) : filteredEntries.map((entry, i) => (
+                                <tr key={entry.InwardID || entry.id || `inward-${i}`} className={`hover:bg-slate-50/30 transition-colors group ${selectedIds.includes(entry.InwardID || entry.id) ? 'bg-blue-50/30' : ''}`}>
                                     {isSelectionMode && (
                                         <td className="px-8 py-6 text-center">
                                             <input
@@ -553,11 +553,11 @@ export default function InwardEntry() {
                                             onChange={(e) => setFormData({ ...formData, InOutwardFromToID: e.target.value })}
                                         >
                                             <option value="">Select From/To Master...</option>
-                                            {fromTos.map(ft => (
-                                                <option key={ft.InOutwardFromToID} value={ft.InOutwardFromToID}>
-                                                    {ft.InOutwardFromToName} {ft.Place ? `(${ft.Place})` : ""}
-                                                </option>
-                                            ))}
+                                            {fromTos.map((ft, i) => (
+                                                 <option key={ft.InOutwardFromToID || `ft-${i}`} value={ft.InOutwardFromToID}>
+                                                     {ft.InOutwardFromToName} {ft.Place ? `(${ft.Place})` : ""}
+                                                 </option>
+                                             ))}
                                         </select>
                                     </div>
                                     <div className="col-span-1">
@@ -608,11 +608,11 @@ export default function InwardEntry() {
                                             onChange={(e) => setFormData({ ...formData, InOutwardModeID: e.target.value })}
                                         >
                                             <option value="">Select Mode...</option>
-                                            {modes.map(m => (
-                                                <option key={m.InOutwardModeID} value={m.InOutwardModeID}>
-                                                    {m.InOutwardModeName}
-                                                </option>
-                                            ))}
+                                            {modes.map((m, i) => (
+                                                 <option key={m.InOutwardModeID || `mode-${i}`} value={m.InOutwardModeID}>
+                                                     {m.InOutwardModeName}
+                                                 </option>
+                                             ))}
                                         </select>
                                     </div>
                                     <div className="col-span-1">
@@ -623,11 +623,11 @@ export default function InwardEntry() {
                                             onChange={(e) => setFormData({ ...formData, CourierCompanyName: e.target.value })}
                                         >
                                             <option value="">Select Company...</option>
-                                            {couriers.map(c => (
-                                                <option key={c.CourierCompanyID} value={c.CourierCompanyName}>
-                                                    {c.CourierCompanyName}
-                                                </option>
-                                            ))}
+                                            {couriers.map((c, i) => (
+                                                 <option key={c.CourierCompanyID || `courier-${i}`} value={c.CourierCompanyName}>
+                                                     {c.CourierCompanyName}
+                                                 </option>
+                                             ))}
                                         </select>
                                     </div>
                                 </div>

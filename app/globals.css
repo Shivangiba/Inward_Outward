@@ -110,7 +110,6 @@ textarea,
    we can add them back here. */
 
 /* Prevent any accidental CSS animations that might affect the cursor visually */
-@keyframes none { from { cursor: inherit; } to { cursor: inherit; } }
 [style*="cursor"], .cursor-fix {
   animation: none !important;
 }

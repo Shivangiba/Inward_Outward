@@ -152,59 +152,60 @@ export async function DELETE(request: Request) {
         const id = searchParams.get("id");
         const idsString = searchParams.get("ids");
 
-        if (idsString) {
-            const ids = idsString.split(",").map((i: string) => parseInt(i)).filter((i: number) => !isNaN(i));
-            if (ids.length === 0) {
-                return NextResponse.json({ error: "Valid IDs are required" }, { status: 400 });
-            }
+        const targetIds = idsString 
+            ? idsString.split(",").map(i => parseInt(i)).filter(i => !isNaN(i))
+            : id ? [parseInt(id)] : [];
 
-            const oldData = await prisma.user.findMany({
-                where: { UserID: { in: ids }, ...baseFilter }
-            });
-
-            const result = await prisma.user.deleteMany({
-                where: { UserID: { in: ids }, ...baseFilter },
-            });
-
-            await logAudit({
-                tableName: "User",
-                action: AuditAction.DELETE,
-                oldData,
-                details: `Bulk deleted ${result.count} users`
-            });
-
-            return NextResponse.json({ message: `${result.count} users deleted successfully` });
+        if (targetIds.length === 0) {
+            return NextResponse.json({ error: "Valid IDs are required" }, { status: 400 });
         }
 
-        if (!id) {
-            return NextResponse.json({ error: "ID is required" }, { status: 400 });
-        }
-        const existing = await prisma.user.findFirst({
-            where: { UserID: parseInt(id), ...baseFilter },
+        // Verify scope before starting deletion
+        const existingUsers = await prisma.user.findMany({
+            where: { UserID: { in: targetIds }, ...baseFilter }
         });
-        if (!existing) {
-            return NextResponse.json({ error: "Forbidden - user not in your scope" }, { status: 403 });
+
+        if (existingUsers.length === 0) {
+            return NextResponse.json({ error: "Forbidden - no valid users in your scope" }, { status: 403 });
         }
 
-        await prisma.user.delete({
-            where: { UserID: parseInt(id) },
-        });
+        const validIds = existingUsers.map(u => u.UserID);
+
+        // Perform Deep Cleanup in a Transaction
+        await prisma.$transaction([
+            // 1. Delete transactions
+            prisma.inward.deleteMany({ where: { UserID: { in: validIds } } }),
+            prisma.outward.deleteMany({ where: { UserID: { in: validIds } } }),
+            
+            // 2. Delete masters created by these users
+            prisma.inwardOutwardOffice.deleteMany({ where: { UserID: { in: validIds } } }),
+            prisma.inOutwardFromTo.deleteMany({ where: { UserID: { in: validIds } } }),
+            prisma.inOutwardMode.deleteMany({ where: { UserID: { in: validIds } } }),
+            prisma.courierCompany.deleteMany({ where: { UserID: { in: validIds } } }),
+            
+            // 3. Clear audit logs
+            prisma.auditLog.deleteMany({ where: { UserID: { in: validIds } } }),
+            
+            // 4. Finally delete the users
+            prisma.user.deleteMany({ where: { UserID: { in: validIds } } })
+        ]);
 
         await logAudit({
             tableName: "User",
-            recordId: id,
             action: AuditAction.DELETE,
-            oldData: existing
+            oldData: existingUsers,
+            details: `Successfully performed deep delete on ${validIds.length} users and all their associated records.`
         });
 
-        return NextResponse.json({ message: "User deleted successfully" });
+        return NextResponse.json({ message: `${validIds.length} users and all their associated records deleted successfully.` });
+
     } catch (error: any) {
         await logAudit({
             tableName: "User",
             action: AuditAction.CRASH,
-            details: `Delete User Error: ${error.message}`
+            details: `Cascade Delete Error: ${error.message}`
         });
-        console.error("Error deleting user:", error);
-        return NextResponse.json({ error: "Failed to delete user" }, { status: 500 });
+        console.error("Error during cascade delete:", error);
+        return NextResponse.json({ error: "Failed to delete user and records", details: error.message }, { status: 500 });
     }
 }

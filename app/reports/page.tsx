@@ -205,8 +205,8 @@ export default function ReportsPage() {
                                         onChange={(e) => setFilters(prev => ({ ...prev, teamId: e.target.value }))}
                                     >
                                         <option value="">Full System Access</option>
-                                        {teams.map(t => (
-                                            <option key={t.TeamID} value={t.TeamID}>{t.TeamName}</option>
+                                        {teams.map((t, i) => (
+                                            <option key={t.TeamID || `team-${i}`} value={t.TeamID}>{t.TeamName}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -222,8 +222,8 @@ export default function ReportsPage() {
                                     onChange={(e) => setFilters(prev => ({ ...prev, officeId: e.target.value }))}
                                 >
                                     <option value="">All Offices</option>
-                                    {offices.map(o => (
-                                        <option key={o.InwardOutwardOfficeID} value={o.InwardOutwardOfficeID}>{o.OfficeName}</option>
+                                    {offices.map((o, i) => (
+                                        <option key={o.InwardOutwardOfficeID || `office-${i}`} value={o.InwardOutwardOfficeID}>{o.OfficeName}</option>
                                     ))}
                                 </select>
                             </div>
@@ -285,8 +285,8 @@ export default function ReportsPage() {
                                         <p className="text-sm text-slate-300 mt-1">Try adjusting your filters or date range.</p>
                                     </td>
                                 </tr>
-                            ) : filteredData.map((item) => (
-                                <tr key={category === 'inward' ? item.InwardID : item.OutwardID} className="hover:bg-slate-50/30 transition-colors">
+                            ) : filteredData.map((item, i) => (
+                                <tr key={`${category}-${item.InwardID || item.OutwardID || item.id || i}`} className="hover:bg-slate-50/30 transition-colors">
                                     <td className="px-8 py-6 text-center font-bold text-slate-900 font-mono text-sm">{item.InwardNo || item.OutwardNo}</td>
                                     <td className="px-8 py-6 text-sm text-slate-500 font-medium">
                                         {new Date(item.InwardDate || item.OutwardDate).toLocaleDateString()}
