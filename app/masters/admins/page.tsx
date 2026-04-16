@@ -328,7 +328,8 @@ export default function AdminMaster() {
                                         Email: "",
                                         Password: "",
                                         RoleID: roles[0]?.RoleID.toString() || "",
-                                        TeamID: teams[0]?.TeamID.toString() || ""
+                                        TeamID: teams[0]?.TeamID.toString() || "",
+                                        IsActive: true
                                     });
                                     setShowForm(true);
                                 }}
