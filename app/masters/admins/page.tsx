@@ -348,7 +348,7 @@ export default function AdminMaster() {
                                 }}
                                 className="px-6 py-3.5 border border-slate-200 rounded-2xl font-bold text-slate-600 hover:bg-slate-50 transition-all flex items-center gap-2"
                             >
-                                <X size={20} />
+                                <XCircle size={20} />
                                 Exit Selection
                             </button>
                             <button
@@ -700,7 +700,7 @@ export default function AdminMaster() {
                         <div className="flex justify-between items-center mb-6">
                             <h2 className="text-xl font-bold text-slate-900">Create New Team</h2>
                             <button onClick={() => setShowTeamForm(false)} className="p-2 hover:bg-slate-100 rounded-xl transition-colors">
-                                <X size={20} className="text-slate-400" />
+                                <XCircle size={20} className="text-slate-400" />
                             </button>
                         </div>
                         <form onSubmit={handleAddTeam} className="space-y-4">
