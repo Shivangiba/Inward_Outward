@@ -58,3 +58,59 @@ body {
     @apply bg-[var(--primary)] text-[var(--primary-foreground)] font-medium;
   }
 }
+
+/* --- Cursor Standardization & "Lilting" Fix --- */
+
+/* 1. Force a clean default cursor globally */
+html, body {
+  cursor: default;
+}
+
+/* 2. Restore standard behavior for all interactive elements */
+a, 
+button, 
+[role="button"], 
+input[type="button"], 
+input[type="submit"], 
+input[type="reset"],
+select,
+label,
+summary,
+[onclick],
+.interactive-element,
+.cursor-pointer,
+.pastel-button,
+.sidebar-link {
+  cursor: pointer !important;
+}
+
+/* 3. Restore text cursor ONLY for inputs and editable areas */
+input:not([type="button"]):not([type="submit"]):not([type="reset"]), 
+textarea, 
+[contenteditable="true"],
+.cursor-text {
+  cursor: text !important;
+}
+
+/* 4. Fix "lilting" (laggy cursor changes) by ensuring the cursor property does not animate */
+* {
+  /* We use transition: none for cursor specifically if possible, 
+     but since 'transition' is a shorthand, we use this specific property override. 
+     Note: Browsers that support individual transition properties will respect this 
+     without breaking other transitions (like color/opacity) that use 'transition: all'.
+  */
+  transition-property: cursor !important;
+  transition-duration: 0s !important;
+  transition-delay: 0s !important;
+}
+
+/* Restore transitions for everything ELSE except cursor */
+/* This is a bit complex in pure CSS, but we can target common hoverable properties 
+   to ensure they still feel smooth. If you have specific animations that broke, 
+   we can add them back here. */
+
+/* Prevent any accidental CSS animations that might affect the cursor visually */
+@keyframes none { from { cursor: inherit; } to { cursor: inherit; } }
+[style*="cursor"], .cursor-fix {
+  animation: none !important;
+}
