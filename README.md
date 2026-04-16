@@ -1,15 +1,86 @@
 # 📥 Inward-Outward Management System
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.1.1-black?style=flat&logo=next.js)](https://nextjs.org/)
-[![Prisma](https://img.shields.io/badge/Prisma-7.3.0-2D3748?style=flat&logo=prisma)](https://www.prisma.io/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+<div align="center">
+  <img src="public/Inward_Outward Banner.png" alt="Inward-Outward Banner" width="100%" />
+</div>
+
+<br/>
+
+<div align="center">
+
+<img src="https://img.shields.io/badge/STATUS-PRODUCTION%20READY-6366f1?style=for-the-badge&labelColor=0a0a14&color=6366f1" />
+<img src="https://img.shields.io/badge/LICENSE-MIT-8b5cf6?style=for-the-badge&labelColor=0a0a14&color=8b5cf6" />
+<img src="https://img.shields.io/badge/NEXT.JS-16.1.1-ffffff?style=for-the-badge&logo=next.js&logoColor=white&labelColor=0a0a14" />
+<img src="https://img.shields.io/badge/PRISMA-7.3.0-2D3748?style=for-the-badge&logo=prisma&logoColor=white&labelColor=0a0a14" />
+<img src="https://img.shields.io/badge/POSTGRESQL-NEON-336791?style=for-the-badge&logo=postgresql&logoColor=white&labelColor=0a0a14" />
+
+</div>
+
+<br/>
+
+### Enterprise-grade digital correspondence tracking — built to replace the physical register.
 
 A robust, enterprise-grade digital correspondence tracking system designed to replace traditional physical registers. This system provides a centralized platform for managing all incoming (Inward) and outgoing (Outward) documents, letters, and parcels with full traceability and role-based access control.
+
+[🚀 Live Demo](https://inward-outward.vercel.app/login) · [📖 Setup Guide](SETUP.md) · [📊 Project Summary](SUMMARY.md) · [🐛 Report Bug](https://github.com/Shivangiba/Inward_Outward/issues)
+
+<br/>
+
+## 🔐 Demo Access
+To explore the application, use the following credentials:
+```bash
+Username: Trial_Admin
+Password: 098765
+```
+
+---
+
+## 🌟 What Is This?
+
+> **Every office has a register.** A big book where incoming letters get stamped, numbered, and logged by hand — then someone searches through 200 pages to find a document from last month.
+>
+> This system **replaces that book** with a fast, searchable, secure, and role-controlled digital platform. Every letter in. Every parcel out. Every action tracked. One dashboard.
+
+---
+
+## 📸 Screenshots
+
+### 🖥️ Dashboard Overview
+<div align="center">
+  <img src="public/Dashboard 1.png" width="48%" />
+  <img src="public/Dashboard - 2.png" width="48%" />
+</div>
+
+<br/>
+
+### 📥 Inward & 📤 Outward Management
+<div align="center">
+  <img src="public/Inward - 1.png" width="48%" />
+  <img src="public/Outward -1.png" width="48%" />
+</div>
+<div align="center">
+  <img src="public/Inward-2.png" width="48%" />
+  <img src="public/Outward -2.png" width="48%" />
+</div>
+
+<br/>
+
+### 🛠️ Master Data & Administration
+<div align="center">
+  <img src="public/Offices.png" width="31%" />
+  <img src="public/Courier master.png" width="31%" />
+  <img src="public/modes.png" width="31%" />
+</div>
+<div align="center">
+  <img src="public/Admin_master.png" width="31%" />
+  <img src="public/Audit logs.png" width="31%" />
+  <img src="public/Reports.png" width="31%" />
+</div>
 
 ---
 
 ## 📋 Table of Contents
+- [📸 Screenshots](#-screenshots)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Project Structure](#project-structure)
@@ -19,6 +90,7 @@ A robust, enterprise-grade digital correspondence tracking system designed to re
 - [Environment Variables](#environment-variables)
 - [Installation](#installation)
 - [Known Limitations / TODOs](#known-limitations--todos)
+
 
 ---
 
